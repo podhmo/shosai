@@ -30,22 +30,81 @@ class App:
     def __exit__(self, typ, tb, value):
         return self.session.__exit__(typ, tb, value)
 
-    def search(
+    @reify
+    def search(self) -> "Search":
+        return Search(self)
+
+    @reify
+    def post(self) -> "Post":
+        return Post(self)
+
+
+class Search:
+    def __init__(self, app: App) -> None:
+        self.app = app
+
+    def __call__(
         self,
         *,
         q: t.Optional[str] = None,
         page: t.Optional[int] = None,
         per_page: t.Optional[int] = None,
     ) -> t.Dict:
-        url = f"{self.url}/posts"
+        app = self.app
+        url = f"{app.url}/posts"
+
         params = {}
-        params["q"] = q or f"author:{self.profile.username}"
+        params["q"] = q or f"author:{app.profile.username}"
         if page is not None:
             params["page"] = page
         if per_page is not None:
             params["per_page"] = per_page
         logger.debug("request: %s, params=%s", url, params)
-        response = self.session.get(url, params=params)
+        response = app.session.get(url, params=params)
+        response.raise_for_status()
+        return response.json()
+
+
+class Post:
+    def __init__(self, app: App) -> None:
+        self.app = app
+
+    # todo: group/scope
+    def __call__(
+        self,
+        title: str,
+        body: str,
+        *,
+        draft: bool = False,
+        notice: bool = False,
+        tags: t.Optional[t.Sequence[str]] = None,
+        id: t.Optional[str] = None,
+    ) -> t.Dict:
+        params = {
+            "title": title,
+            "body": body,
+            "draft": draft,
+            "notice": notice,
+        }
+        if tags is not None:
+            params["tags"] = tags
+        if id is None:
+            return self._create_post(params)
+        else:
+            return self._update_post(params, id=id)
+
+    def _update_post(self, params: t.Dict, *, id: str) -> t.Dict:
+        app = self.app
+        url = f"{app.url}/posts/{id}"
+        response = app.session.patch(url, json=params)
+        response.raise_for_status()
+        return response.json()
+
+    def _create_post(self, params: t.Dict) -> t.Dict:
+        app = self.app
+        url = f"{app.url}/posts"
+        print(params)
+        response = app.session.post(url, json=params)
         response.raise_for_status()
         return response.json()
 
