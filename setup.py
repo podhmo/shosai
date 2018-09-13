@@ -14,6 +14,7 @@ except IOError:
 
 
 install_requires = [
+    "requests",
 ]
 
 
@@ -49,5 +50,7 @@ setup(name='docbasesync',
       tests_require=tests_require,
       test_suite="docbasesync.tests",
       entry_points="""
+      [console_scripts]
+      docbasesync = docbasesync.__main__:main
 """)
 
