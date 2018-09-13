@@ -7,7 +7,9 @@ logger = logging.getLogger(__name__)
 
 def search(
     *,
-    config: str,
+    config_path: str,
+    mapping_path: str,
+    save: bool = False,
     query: t.Optional[str] = None,
     page: t.Optional[int] = None,
     per_page: t.Optional[int] = None,
@@ -15,15 +17,22 @@ def search(
 ) -> None:
     from docbasesync import App
     out = out or sys.stdout
-    app = App(config)
-    with app:
-        data = app.search(q=query, page=page, per_page=per_page)
+    app = App(config_path, mapping_path=mapping_path)
+    with app.resource as r:
+        data = r.search(q=query, page=page, per_page=per_page)
     json.dump(data, out, indent=2, ensure_ascii=False)
+    if save:
+        with app.saver as append:
+            for post in data["posts"]:
+                post["tags"] = [t["name"] for t in post["tags"]]
+                append(post)
 
 
 def post(
     *,
-    config: str,
+    config_path: str,
+    mapping_path: str,
+    save: bool = True,
     path: str,
     draft: bool = False,
     notice: bool = False,
@@ -34,11 +43,12 @@ def post(
     from docbasesync import App
     from docbasesync import parsing
     out = out or sys.stdout
-    app = App(config)
-    with app:
+    app = App(config_path)
+    with app.resource as r:
         with open(path) as rf:
             parsed = parsing.parse_article(rf)
-        data = app.post(
+        id = id or app.loader.lookup_id(path)
+        data = r.post(
             parsed.title,
             parsed.content,
             tags=[*parsed.tags, *(tags or [])],
@@ -47,14 +57,19 @@ def post(
             notice=notice,
         )
     json.dump(data, out, indent=2, ensure_ascii=False)
+    if save:
+        with app.saver as append:
+            append(data, writefile=path)
 
 
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
     parser = argparse.ArgumentParser(description=None)
     parser.print_usage = parser.print_help
-    parser.add_argument('--config', required=False)
+    parser.add_argument('-c', '--config', required=False, dest="config_path")
     parser.add_argument('--log', default="INFO", choices=list(logging._nameToLevel.keys()))
+    parser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    parser.add_argument("--save", action="store_true")
 
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
 
