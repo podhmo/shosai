@@ -1,6 +1,7 @@
 import sys
 import typing as t
 import json
+import os.path
 import logging
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,33 @@ def post(
             append(data, writefile=path)
 
 
+def attachment(
+    *,
+    config_path: str,
+    mapping_path: str,
+    save: bool = True,
+    paths: t.Sequence[str],
+    out: t.Optional[t.IO] = None,
+) -> None:
+    import base64
+    from docbasesync import App
+    out = out or sys.stdout
+    app = App(config_path)
+    with app.resource as r:
+        contents = []
+        for path in paths:
+            with open(path, "rb") as rf:
+                data = rf.read()
+            contents.append(
+                {
+                    "name": os.path.basename(path),
+                    "content": base64.b64encode(data).decode("ascii")
+                }
+            )
+        data = r.attachment(contents)
+    json.dump(data, out, indent=2, ensure_ascii=False)
+
+
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
     parser = argparse.ArgumentParser(description=None)
@@ -90,6 +118,12 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--tag", dest="tags", action="append")
     sparser.add_argument("--id")
+
+    # attachment
+    fn = attachment
+    sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
+    sparser.set_defaults(subcommand=fn)
+    sparser.add_argument("paths", nargs="+")
 
     args = parser.parse_args(argv)
     params = vars(args).copy()

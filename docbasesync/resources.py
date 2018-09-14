@@ -31,6 +31,10 @@ class Resource:
         return Search(self)
 
     @reify
+    def attachment(self) -> "Attachment":
+        return Attachment(self)
+
+    @reify
     def post(self) -> "Post":
         return Post(self)
 
@@ -58,6 +62,22 @@ class Search:
 
         logger.info("GET %s, params=%s", url, params)
         response = app.session.get(url, params=params)
+        logger.info("status=%s, %s", response.status_code, url)
+        response.raise_for_status()
+        return response.json()
+
+
+class Attachment:
+    def __init__(self, app: Resource) -> None:
+        self.app = app
+
+    def __call__(self, contents):
+        # [{"name": <str>, "content": <base64>}]
+        app = self.app
+        url = f"{app.url}/attachments"
+
+        logger.info("POST %s, params=%s", url, [d["name"] for d in contents])
+        response = app.session.post(url, json=contents)
         logger.info("status=%s, %s", response.status_code, url)
         response.raise_for_status()
         return response.json()
