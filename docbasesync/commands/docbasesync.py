@@ -150,7 +150,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.set_defaults(subcommand=fn)
     sparser.add_argument('-c', '--config', required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
-    sparser.add_argument("--unsave", action="store_false", dest="save")
+    sparser.add_argument("--save", action="store_true")
     sparser.add_argument("-q", "--query", default=None)
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)
