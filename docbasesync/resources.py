@@ -97,6 +97,8 @@ class Post:
         notice: bool = False,
         tags: t.Optional[t.Sequence[str]] = None,
         id: t.Optional[str] = None,
+        scope: t.Optional[str] = None,
+        groups: t.Optional[t.Sequence[int]] = None,
     ) -> t.Dict:
         params = {
             "title": title,
@@ -106,7 +108,13 @@ class Post:
         }
         if tags is not None:
             params["tags"] = tags
+        if scope is not None:
+            params["scope"] = scope
+        if groups is not None:
+            params["groups"] = groups
+
         if id is None:
+            params["draft"] = True  # always posting as draft
             return self._create_post(params)
         else:
             return self._update_post(params, id=id)

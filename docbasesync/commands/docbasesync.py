@@ -37,7 +37,9 @@ def post(
     draft: bool = False,
     notice: bool = False,
     tags: t.Optional[t.Sequence[str]] = None,
-    id: t.Optional[str],
+    id: t.Optional[str] = None,
+    scope: t.Optional[str] = None,
+    groups: t.Optional[t.Sequence[str]] = None,
     out: t.Optional[t.IO] = None,
 ) -> None:
     from docbasesync import App
@@ -47,12 +49,19 @@ def post(
     with app.resource as r:
         with open(path) as rf:
             parsed = parsing.parse_article(rf.read())
-        id = id or app.loader.lookup_id(path)
+
+        meta = app.loader.lookup(path)
+        if meta is not None:
+            id = id or meta["id"]
+            scope = scope or meta["scope"]
+            groups = groups or meta["groups"]
         data = r.post(
             parsed.title,
             parsed.content,
             tags=[*parsed.tags, *(tags or [])],
             id=id,
+            scope=scope,
+            groups=groups,
             draft=draft,
             notice=notice,
         )
@@ -93,6 +102,8 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--tag", dest="tags", action="append")
     sparser.add_argument("--id")
+    sparser.add_argument("--scope")
+    sparser.add_argument("--group", dest="groups", action="append")
 
     args = parser.parse_args(argv)
     params = vars(args).copy()

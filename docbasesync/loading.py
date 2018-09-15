@@ -1,3 +1,4 @@
+import typing as t
 import os.path
 import json
 import logging
@@ -43,9 +44,9 @@ class Loader:
     @reify
     def abspath_map(self):
         dirpath = os.path.abspath(os.path.dirname(self.path))
-        return {os.path.normpath(os.path.join(dirpath, d["file"])): d["id"] for d in self.data}
+        return {os.path.normpath(os.path.join(dirpath, d["file"])): d for d in self.data}
 
-    def lookup_id(self, path):
+    def lookup(self, path) -> t.Optional[t.Dict]:
         abspath = os.path.normpath(os.path.abspath(path))
         return self.abspath_map.get(abspath)
 
