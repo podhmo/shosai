@@ -34,6 +34,25 @@ def search(
                 append(post)
 
 
+def clone(
+    *,
+    config_path: str,
+    mapping_path: str,
+    url: str,
+    name: t.Optional[str] = None,
+    out: t.Optional[t.IO] = None,
+) -> None:
+    from docbasesync import App
+    out = out or sys.stdout
+    app = App(config_path, mapping_path=mapping_path)
+    with app.resource as r:
+        post = r.fetch.from_url(url)
+        post["body"] = normalize_linesep_text(post["body"])
+    with app.saver as append:
+        post["tags"] = [t["name"] for t in post["tags"]]
+        append(post, name=name)
+
+
 def pull(
     *,
     config_path: str,
@@ -154,6 +173,15 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("-q", "--query", default=None)
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)
+
+    # clone
+    fn = clone
+    sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
+    sparser.set_defaults(subcommand=fn)
+    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument("url")
+    sparser.add_argument("--name")
 
     # pull
     fn = pull

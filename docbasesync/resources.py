@@ -113,6 +113,18 @@ class Fetch:
         response.raise_for_status()
         return response.json()
 
+    def from_url(self, url) -> t.Dict:
+        import re
+        app = self.app
+        rx = re.compile(r"https://([^.]+).docbase.io/posts/(\d+)")
+
+        m = rx.search(url)
+        assert m is not None
+        team = m.group(1)
+        assert team == app.profile.teamname
+        id = m.group(2)
+        return self.__call__(id)
+
 
 class Post:
     def __init__(self, app: Resource) -> None:
