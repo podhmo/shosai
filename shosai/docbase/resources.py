@@ -1,8 +1,10 @@
 import typing as t
+import mypy_extensions as mx
 import logging
 import os.path
 import base64
 from requests import sessions
+from . import structure
 from ..langhelpers import reify
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,17 @@ class Resource:
         return Post(self)
 
 
+class SearchResponseDict(mx.TypedDict):
+    meta: structure.MetaDict
+    posts: t.Sequence[structure.PostDict]
+
+
+class SearchParamsDict(mx.TypedDict, total=False):
+    q: str  # default "*"
+    page: int  # default 1
+    per_page: int  # default 20, max 100
+
+
 class Search:
     def __init__(self, app: Resource) -> None:
         self.app = app
@@ -67,11 +80,11 @@ class Search:
         q: t.Optional[str] = None,
         page: t.Optional[int] = None,
         per_page: t.Optional[int] = None,
-    ) -> t.Dict:
+    ) -> t.Sequence[SearchResponseDict]:
         app = self.app
         url = f"{app.url}/posts"
 
-        params = {}
+        params: SearchParamsDict = {}
         params["q"] = q or f"author:{app.profile.username}"
         if page is not None:
             params["page"] = page
@@ -86,18 +99,29 @@ class Attachment:
     def __init__(self, app: Resource) -> None:
         self.app = app
 
-    def build_content_from_file(self, path, *, name=None) -> t.Dict:
+    def build_content_from_file(
+        self,
+        path: str,
+        *,
+        name=None,
+    ) -> structure.AttachmentDict:
         with open(path, "rb") as rf:
             data = rf.read()
         return self.build_content(path, data, name=name)
 
-    def build_content(self, path, data, *, name=None) -> t.Dict:
+    def build_content(
+        self,
+        path: str,
+        data: bytes,
+        *,
+        name: t.Optional[str] = None,
+    ) -> structure.AttachmentDict:
         return {
             "name": name or os.path.basename(path),
             "content": base64.b64encode(data).decode("ascii"),
         }
 
-    def __call__(self, contents):
+    def __call__(self, contents) -> t.Sequence[structure.AttachmentResultDict]:
         # [{"name": <str>, "content": <base64>}]
         app = self.app
         url = f"{app.url}/attachments"
@@ -110,13 +134,13 @@ class Fetch:
     def __init__(self, app: Resource) -> None:
         self.app = app
 
-    def __call__(self, id) -> t.Dict:
+    def __call__(self, id: int) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/posts/{id}"
         response = app.session.get(url)
         return response.json()
 
-    def from_url(self, url) -> t.Dict:
+    def from_url(self, url: str) -> structure.PostDict:
         import re
         app = self.app
         rx = re.compile(r"https://([^.]+).docbase.io/posts/(\d+)")
@@ -127,6 +151,19 @@ class Fetch:
         assert team == app.profile.teamname
         id = m.group(2)
         return self.__call__(id)
+
+
+class _PostParamsDictOptional(mx.TypedDict, total=False):
+    draft: bool  # default false
+    notice: bool  # default true
+    tags: t.Sequence[str]
+    scope: str  # default "everyone"
+    groups: t.Sequence[str]
+
+
+class PostParamsDict(_PostParamsDictOptional, mx.TypedDict, total=True):
+    title: str
+    body: str
 
 
 class Post:
@@ -145,8 +182,8 @@ class Post:
         id: t.Optional[str] = None,
         scope: t.Optional[str] = None,
         groups: t.Optional[t.Sequence[int]] = None,
-    ) -> t.Dict:
-        params = {
+    ) -> structure.PostDict:
+        params: PostParamsDict = {
             "title": title,
             "body": body,
             "draft": draft,
@@ -164,14 +201,14 @@ class Post:
         else:
             return self._update_post(params, id=id)
 
-    def _update_post(self, params: t.Dict, *, id: str) -> t.Dict:
+    def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/posts/{id}"
 
         response = app.session.patch(url, json=params)
         return response.json()
 
-    def _create_post(self, params: t.Dict) -> t.Dict:
+    def _create_post(self, params: t.Dict) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/posts"
 
