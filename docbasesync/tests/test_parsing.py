@@ -64,6 +64,7 @@ this is first article
         self.assertEqual(parsed.content, "\n".join(text.split("\n")[1:]).strip())
 
     def test_it__with_image(self):
+        from docbasesync.parsing import Image
         text = textwrap.dedent(
             """
 # section
@@ -78,17 +79,17 @@ this is first article
         self.assertEqual(parsed.tags, [])
         self.assertEqual(parsed.content, "\n".join(text.split("\n")[1:]).strip())
         images = [
-            {
+            Image(**{
                 'src': 'https://example.net/images/foo.png',
                 'text': 'foo'
-            },
-            {
+            }),
+            Image(**{
                 'src': 'https://example.net/images/bar.png',
                 'text': 'bar'
-            },
-            {
+            }),
+            Image(**{
                 'src': 'boo.png',
                 'text': 'boo'
-            },
+            }),
         ]
         self.assertEqual(parsed.images, images)

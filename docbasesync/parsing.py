@@ -7,6 +7,7 @@ import mistune
 
 Parsed = namedtuple("Parsed", "title, tags, content, images")
 Title = namedtuple("Title", "title, tags")
+Image = namedtuple("Image", "src, text")
 
 
 class _CaputringRenderer:
@@ -29,7 +30,7 @@ class _CaputringRenderer:
         return self.renderer.header(text, level, *args, **kwargs)
 
     def image(self, src, title, text):
-        self.result["images"].append(dict(src=src, text=text))
+        self.result["images"].append(Image(src=src, text=text))
         return self.renderer.image(src, title, text)
 
 
