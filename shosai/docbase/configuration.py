@@ -16,7 +16,7 @@ def init(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     logger.info("write: %s", path)
     with open(path, "w") as wf:
-        json.dump(d, wf, indent=2)
+        json.dump({"docbase": d}, wf, indent=2)
 
 
 def load(config_path, *, init=init):
@@ -28,7 +28,7 @@ def load(config_path, *, init=init):
     logger.info("read: %s", config_path)
     with open(config_path) as rf:
         config = json.load(rf)
-    return config
+    return config["docbase"]
 
 
 class Profile:
