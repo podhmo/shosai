@@ -47,37 +47,49 @@ class ParseArticleTests(unittest.TestCase):
     def test_it(self):
         text = textwrap.dedent(
             """
-# [aaa][bb] [memo]hello
-
-this is first article
-
-## subsection
-
-- x
-- y
-- z
+            # [aaa][bb] [memo]hello
+            
+            this is first article
+            
+            ## subsection
+            
+            - x
+            - y
+            - z
 """
         ).strip()
         parsed = self._callFUT(text)
         self.assertEqual(parsed.title, "hello")
         self.assertEqual(parsed.tags, ["aaa", "bb", "memo"])
-        self.assertEqual(parsed.content, "\n".join(text.split("\n")[1:]).strip())
+        self.assertEqual(parsed.content, "\n".join(text.splitlines()[1:]).strip())
+
+    def test_it2(self):
+        text = textwrap.dedent("""
+        
+        Timeseries Classification: KNN & DTW
+        ===
+        Mark Regan
+        """).rstrip()
+        parsed = self._callFUT(text)
+        self.assertEqual(parsed.title, "Timeseries Classification: KNN & DTW")
+        self.assertEqual(parsed.tags, [])
+        self.assertEqual(parsed.content, "\n".join(text.strip().splitlines()[2:]).strip())
 
     def test_it__with_image(self):
         from docbasesync.parsing import Image
         text = textwrap.dedent(
             """
-# section
-
-![foo](https://example.net/images/foo.png))
-![bar](https://example.net/images/bar.png))
-![boo](boo.png))
-"""
+            # section
+            
+            ![foo](https://example.net/images/foo.png))
+            ![bar](https://example.net/images/bar.png))
+            ![boo](boo.png))
+            """
         ).strip()
         parsed = self._callFUT(text)
         self.assertEqual(parsed.title, "section")
         self.assertEqual(parsed.tags, [])
-        self.assertEqual(parsed.content, "\n".join(text.split("\n")[1:]).strip())
+        self.assertEqual(parsed.content, "\n".join(text.splitlines()[1:]).strip())
         images = [
             Image(**{
                 'src': 'https://example.net/images/foo.png',

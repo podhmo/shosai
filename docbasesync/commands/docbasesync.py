@@ -96,11 +96,19 @@ def push(
         with open(path) as rf:
             parsed = parsing.parse_article(rf.read())
 
-        content = parsed.content
+        meta = app.loader.lookup(path)
+        tags = parsed.tags
+        if meta is not None:
+            if draft is None:
+                draft = meta.get("draft", True)
+            id = id or meta["id"]
+            scope = scope or meta["scope"]
+            groups = groups or meta["groups"]
 
         # parse article and upload images as attachments.
         attachments = []
         namestore = NameStore()
+        content = parsed.content
 
         for image in parsed.images:
             if "://" in image.src:
@@ -129,16 +137,6 @@ def push(
                 wf.write(f"#{tagspart}{parsed.title}\n")
                 wf.write("")
                 wf.write(content)
-
-        meta = app.loader.lookup(path)
-        tags = parsed.tags
-        if meta is not None:
-            if draft is None:
-                draft = meta.get("draft", True)
-            id = id or meta["id"]
-            scope = scope or meta["scope"]
-            groups = groups or meta["groups"]
-            tags = tags or meta["tags"]
 
         data = r.post(
             parsed.title or (meta and meta.get("title")) or "",

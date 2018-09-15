@@ -2,6 +2,7 @@ import json
 import sys
 import re
 import itertools
+import html
 from collections import namedtuple
 import mistune
 
@@ -72,12 +73,22 @@ def parse_article(text):
     m.render(text)
     result = capturing.result
 
-    title = result["title"].title
-    itr = iter(text.split("\n"))
+    title = html.unescape(result["title"].title)
+    itr = iter(text.splitlines())
     for line in itr:
         if title in line:
             break
-    content = "\n".join(itr).strip()
+
+    # for section using === such as
+    # <section title>
+    # =============
+    #
+    # text body
+
+    buf = [next(itr)]
+    if not buf[0].strip("="):
+        buf.pop()
+    content = "\n".join(itertools.chain(buf, itr)).strip()
 
     return Parsed(
         title=title,
