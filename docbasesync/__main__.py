@@ -47,7 +47,7 @@ def post(
     app = App(config_path)
     with app.resource as r:
         with open(path) as rf:
-            parsed = parsing.parse_article(rf)
+            parsed = parsing.parse_article(rf.read())
         id = id or app.loader.lookup_id(path)
         data = r.post(
             parsed.title,
@@ -90,14 +90,23 @@ def attachment(
     json.dump(data, out, indent=2, ensure_ascii=False)
 
 
+def parse(
+    *,
+    path: str,
+    out: t.Optional[t.IO] = None,
+) -> None:
+    from docbasesync import parsing
+    out = out or sys.stdout
+    with open(path) as rf:
+        parsed = parsing.parse_article(rf.read())
+    parsing.dump(parsed)
+
+
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
     parser = argparse.ArgumentParser(description=None)
     parser.print_usage = parser.print_help
-    parser.add_argument('-c', '--config', required=False, dest="config_path")
     parser.add_argument('--log', default="INFO", choices=list(logging._nameToLevel.keys()))
-    parser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
-    parser.add_argument("--save", action="store_true")
 
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
 
@@ -105,15 +114,27 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = search
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
+    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument("--save", action="store_true")
     sparser.add_argument("-q", "--query", default=None)
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)
+
+    # parse
+    fn = parse
+    sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
+    sparser.set_defaults(subcommand=fn)
+    sparser.add_argument("path")
 
     # post
     fn = post
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument("path", )
+    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument("--save", action="store_true")
+    sparser.add_argument("path")
     sparser.add_argument("--draft", action="store_true")
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--tag", dest="tags", action="append")
@@ -123,6 +144,9 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = attachment
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
+    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument("--save", action="store_true")
     sparser.add_argument("paths", nargs="+")
 
     args = parser.parse_args(argv)

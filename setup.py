@@ -1,5 +1,4 @@
 import os
-import sys
 
 from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
@@ -13,6 +12,7 @@ except IOError:
 
 install_requires = [
     "requests",
+    "mistune",
 ]
 
 docs_extras = []
