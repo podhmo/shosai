@@ -60,12 +60,18 @@ class Saver:
     def __enter__(self):
         return self.append
 
-    def append(self, post, *, writefile=None, _retry=False):
+    def append(self, post, *, writefile=None, filepath=None, name=None, _retry=False):
         title = post["title"]
-        if writefile is None:
-            filepath = os.path.join(self.docdir, f"{post['id']}.md")
-        else:
-            filepath = writefile
+        if filepath is None:
+            if writefile is not None:
+                filepath = writefile
+            elif name is None:
+                filepath = os.path.join(self.docdir, f"{post['id']}.md")
+            else:
+                base, ext = os.path.splitext(name)
+                if not ext:
+                    ext = ".md"
+                filepath = os.path.join(self.docdir, f"{base}{ext}")
 
         if writefile is None:
             try:
@@ -78,7 +84,9 @@ class Saver:
                 if _retry:
                     raise
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                return self.append(post, writefile=writefile, _retry=True)
+                return self.append(
+                    post, writefile=writefile, filepath=filepath, name=name, _retry=True
+                )
 
         for k in ["tags", "body", "user", "comments"]:
             post.pop(k, None)

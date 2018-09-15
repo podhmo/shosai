@@ -9,7 +9,7 @@ class reify(object):
         self.wrapped = wrapped
         try:
             self.__doc__ = wrapped.__doc__
-        except:
+        except Exception:
             pass
 
     def __get__(self, inst, objtype=None):
@@ -18,6 +18,12 @@ class reify(object):
         val = self.wrapped(inst)
         setattr(inst, self.wrapped.__name__, val)
         return val
+
+
+def normalize_linesep_text(text):
+    lines = [line for line in text.rstrip().splitlines()]
+    lines.append("")
+    return os.linesep.join(lines)
 
 
 class NameStore:

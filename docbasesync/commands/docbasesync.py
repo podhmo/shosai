@@ -4,7 +4,10 @@ import os.path
 import json
 import logging
 import re  # xxx
-from docbasesync.langhelpers import NameStore
+from docbasesync.langhelpers import (
+    NameStore,
+    normalize_linesep_text,
+)
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +34,29 @@ def search(
                 append(post)
 
 
-def post(
+def pull(
+    *,
+    config_path: str,
+    mapping_path: str,
+    path: str,
+    out: t.Optional[t.IO] = None,
+) -> None:
+    from docbasesync import App
+    out = out or sys.stdout
+    app = App(config_path, mapping_path=mapping_path)
+    with app.resource as r:
+        meta = app.loader.lookup(path)
+        if meta is None:
+            print(f"mapped file is not found {path}", file=sys.stderr)
+            sys.exit(1)
+        post = r.fetch(meta["id"])
+        post["body"] = normalize_linesep_text(post["body"])
+    with app.saver as append:
+        post["tags"] = [t["name"] for t in post["tags"]]
+        append(post, filepath=meta["file"])
+
+
+def push(
     *,
     config_path: str,
     mapping_path: str,
@@ -130,8 +155,16 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)
 
-    # post
-    fn = post
+    # pull
+    fn = pull
+    sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
+    sparser.set_defaults(subcommand=fn)
+    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument("path")
+
+    # push
+    fn = push
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
     sparser.add_argument('-c', '--config', required=False, dest="config_path")

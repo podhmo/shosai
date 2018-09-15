@@ -37,6 +37,10 @@ class Resource:
         return Attachment(self)
 
     @reify
+    def fetch(self) -> "Fetch":
+        return Fetch(self)
+
+    @reify
     def post(self) -> "Post":
         return Post(self)
 
@@ -91,6 +95,20 @@ class Attachment:
 
         logger.info("POST %s, params=%s", url, [d["name"] for d in contents])
         response = app.session.post(url, json=contents)
+        logger.info("status=%s, %s", response.status_code, url)
+        response.raise_for_status()
+        return response.json()
+
+
+class Fetch:
+    def __init__(self, app: Resource) -> None:
+        self.app = app
+
+    def __call__(self, id) -> t.Dict:
+        app = self.app
+        url = f"{app.url}/posts/{id}"
+        logger.info("GET %s", url)
+        response = app.session.get(url)
         logger.info("status=%s, %s", response.status_code, url)
         response.raise_for_status()
         return response.json()
