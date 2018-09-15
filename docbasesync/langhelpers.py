@@ -1,3 +1,4 @@
+import os.path
 from collections import defaultdict
 
 
@@ -20,30 +21,52 @@ class reify(object):
 
 
 class NameStore:
+    """
+    >>> one = object()
+    >>> two = object()
+    >>> store = NameStore()
+    >>> store[one] = "foo"
+    >>> store[two] = "foo"
+    >>> store[one]
+    "foo"
+    >>> store[two]
+    "foo01"
+    """
+
     def __init__(self):
         self.c = defaultdict(int)
-        self.value_map = {}  # (src_type, dst_type) => (name, i)
+        self.value_to_uid_mapping = {}
+        self.uid_to_value_mapping = {}
 
     def __contains__(self, value):
-        return value in self.value_map
+        return value in self.value_to_uid_mapping
 
     def __setitem__(self, value, name):
-        if value not in self.value_map:
-            self.value_map[value] = self.get_name(value, name)
+        if value not in self.value_to_uid_mapping:
+            uid = self.get_or_create_uid(value, name)
+            self.value_to_uid_mapping[value] = uid
             self.c[name] += 1
+            self.uid_to_value_mapping[uid] = value
 
     def __getitem__(self, value):
-        return self.value_map[value]
+        return self.value_to_uid_mapping[value]
 
-    def get_name(self, value, name):
+    def reverse_lookup(self, uid):
+        return self.uid_to_value_mapping[uid]
+
+    def get_or_create_uid(self, value, name):
         try:
             return self[value]
         except KeyError:
             i = self.c[name]
-            return self.new_name(name, i)
+            return self._generate_uid(name, i)
 
-    def new_name(self, name, i):
+    def _generate_uid(self, name, i):
         if i == 0:
             return name
         else:
-            return "{}{:02d}".format(name, i)
+            base, ext = os.path.splitext(name)
+            if not ext:
+                return "{}{:02d}".format(name, i)
+            else:
+                return "{}{:02d}{ext}".format(base, i, ext)

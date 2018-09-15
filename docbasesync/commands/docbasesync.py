@@ -1,7 +1,10 @@
 import sys
 import typing as t
+import os.path
 import json
 import logging
+import re  # xxx
+from docbasesync.langhelpers import NameStore
 logger = logging.getLogger(__name__)
 
 
@@ -49,6 +52,40 @@ def post(
         with open(path) as rf:
             parsed = parsing.parse_article(rf.read())
 
+        content = parsed.content
+
+        # parse article and upload images as attachments.
+        attachments = []
+        namestore = NameStore()
+
+        for image in parsed.images:
+            if "://" in image.src:
+                continue
+            imagepath = os.path.join(os.path.dirname(path), image.src)
+            if not os.path.exists(imagepath):
+                logger.info("image: %s is not found (where %s)", imagepath, path)
+                continue
+            if image.src in namestore:
+                continue
+            namestore[image.src] = os.path.basename(imagepath)
+            attachments.append(
+                r.attachment.build_content_from_file(imagepath, name=namestore[image.src])
+            )
+        if attachments:
+            logger.info("attachments is found, the length is %d", len(attachments))
+            uploaded = r.attachment(attachments)
+
+            logger.info("overwrite passed article %s", path)
+            for uploaded_image in uploaded:
+                image_src = namestore.reverse_lookup(uploaded_image["name"])
+                rx = re.compile(f"\\( *{image_src}*\\)")
+                content = rx.subn(f"({uploaded_image['url']})", content)[0]
+            with open(path, "w") as wf:
+                tagspart = "".join([f"[{t}]" for t in parsed.tags])
+                wf.write(f"#{tagspart}{parsed.title}\n")
+                wf.write("")
+                wf.write(content)
+
         meta = app.loader.lookup(path)
         tags = parsed.tags
         if meta is not None:
@@ -58,9 +95,10 @@ def post(
             scope = scope or meta["scope"]
             groups = groups or meta["groups"]
             tags = tags or meta["tags"]
+
         data = r.post(
             parsed.title or (meta and meta.get("title")) or "",
-            parsed.content,
+            content,
             tags=tags,
             id=id,
             scope=scope,
@@ -87,7 +125,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.set_defaults(subcommand=fn)
     sparser.add_argument('-c', '--config', required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
-    sparser.add_argument("--save", action="store_true")
+    sparser.add_argument("--unsave", action="store_false", dest="save")
     sparser.add_argument("-q", "--query", default=None)
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)
@@ -98,7 +136,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.set_defaults(subcommand=fn)
     sparser.add_argument('-c', '--config', required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
-    sparser.add_argument("--save", action="store_true")
+    sparser.add_argument("--unsave", action="store_false", dest="save")
     sparser.add_argument("path")
     sparser.add_argument("--draft", action="store_true", default=None)
     sparser.add_argument("--notice", action="store_true")

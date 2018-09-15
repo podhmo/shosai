@@ -1,4 +1,4 @@
-## sample (with images)
+#[foo][sample] sample (with images)
 
 png
 
