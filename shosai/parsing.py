@@ -42,7 +42,7 @@ _scanner = re.Scanner([
 ])
 
 
-def parse_title(title, *, scanner=_scanner):
+def parse_title(title: str, *, scanner: re.Scanner = _scanner) -> Title:
     r, rest = scanner.scan(title.strip().lstrip("#"))
     assert not rest
 
@@ -67,7 +67,7 @@ def parse_title(title, *, scanner=_scanner):
     return Title(tags=tags, title="".join(itertools.chain(buf, itr)).strip())
 
 
-def parse_article(text):
+def parse_article(text: str) -> Parsed:
     capturing = _CaputringRenderer(mistune.Renderer())
     m = mistune.Markdown(renderer=capturing)
     m.render(text)
@@ -98,7 +98,7 @@ def parse_article(text):
     )
 
 
-def dump(parsed, out=sys.stdout):
+def dump(parsed: Parsed, out=sys.stdout) -> None:
     def default(o):
         if hasattr(o, "_asdict"):
             return o._asdict()

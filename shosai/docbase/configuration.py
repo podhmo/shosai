@@ -3,12 +3,13 @@ import json
 import logging
 import os.path
 from ..langhelpers import reify
+from . import structure
 logger = logging.getLogger(__name__)
 
 
-def init(path):
-    api_token = "<from https://help.docbase.io/posts/45703#%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3>"
-    d = {
+def init(path: str) -> None:
+    api_token: str = "<from https://help.docbase.io/posts/45703#%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3>"
+    d: structure.ProfileDict = {
         "teamname": "<team>",
         "token": api_token,
         "username": "<user>",
@@ -19,7 +20,7 @@ def init(path):
         json.dump({"docbase": d}, wf, indent=2)
 
 
-def load(config_path, *, init=init):
+def load(config_path: str, *, init=init):
     if not os.path.exists(config_path):
         print(f"{config_path} is not found, generated. please setting this file.", file=sys.stderr)
         init(config_path)
@@ -32,13 +33,12 @@ def load(config_path, *, init=init):
 
 
 class Profile:
-    def __init__(self, config_path: str) -> None:
-        data = load(config_path)
-        assert "token" in data
-        assert "teamname" in data
-        assert "username" in data
-        self.data = data
+    data: structure.ProfileDict
 
+    def __init__(self, config_path: str) -> None:
+        self.data = load(config_path)
+
+    # todo: remove?
     @reify
     def token(self) -> str:
         return self.data["token"]

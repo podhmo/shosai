@@ -13,6 +13,7 @@ except IOError:
 install_requires = [
     "requests",
     "mistune",
+    "mypy_extensions",
 ]
 
 docs_extras = []
