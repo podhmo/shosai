@@ -114,7 +114,6 @@ class Post:
             params["groups"] = groups
 
         if id is None:
-            params["draft"] = True  # always posting as draft
             return self._create_post(params)
         else:
             return self._update_post(params, id=id)

@@ -34,9 +34,8 @@ def post(
     mapping_path: str,
     save: bool = True,
     path: str,
-    draft: bool = False,
+    draft: t.Optional[bool] = None,
     notice: bool = False,
-    tags: t.Optional[t.Sequence[str]] = None,
     id: t.Optional[str] = None,
     scope: t.Optional[str] = None,
     groups: t.Optional[t.Sequence[str]] = None,
@@ -51,18 +50,22 @@ def post(
             parsed = parsing.parse_article(rf.read())
 
         meta = app.loader.lookup(path)
+        tags = parsed.tags
         if meta is not None:
+            if draft is None:
+                draft = meta.get("draft", True)
             id = id or meta["id"]
             scope = scope or meta["scope"]
             groups = groups or meta["groups"]
+            tags = tags or meta["tags"]
         data = r.post(
-            parsed.title,
+            parsed.title or (meta and meta.get("title")) or "",
             parsed.content,
-            tags=[*parsed.tags, *(tags or [])],
+            tags=tags,
             id=id,
             scope=scope,
             groups=groups,
-            draft=draft,
+            draft=bool(draft),
             notice=notice,
         )
     json.dump(data, out, indent=2, ensure_ascii=False)
@@ -76,7 +79,6 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     parser = argparse.ArgumentParser(description=None)
     parser.print_usage = parser.print_help
     parser.add_argument('--log', default="INFO", choices=list(logging._nameToLevel.keys()))
-
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
 
     # search
@@ -98,9 +100,8 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("--save", action="store_true")
     sparser.add_argument("path")
-    sparser.add_argument("--draft", action="store_true")
+    sparser.add_argument("--draft", action="store_true", default=None)
     sparser.add_argument("--notice", action="store_true")
-    sparser.add_argument("--tag", dest="tags", action="append")
     sparser.add_argument("--id")
     sparser.add_argument("--scope")
     sparser.add_argument("--group", dest="groups", action="append")

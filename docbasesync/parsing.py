@@ -20,11 +20,11 @@ class _CaputringRenderer:
     def __getattr__(self, name):
         attr = getattr(self.renderer, name)
         if callable(attr):
-            setattr(self.renderer, name, attr)  # cache
+            setattr(self.renderer, name, attr)  # method cache
         return attr
 
     def header(self, text, level, *args, **kwargs):
-        if level == 1 and not self.result["title"]:
+        if level == 1 and not self.result["title"].title:
             self.result["title"] = parse_title(text)
         return self.renderer.header(text, level, *args, **kwargs)
 
@@ -41,7 +41,7 @@ _scanner = re.Scanner([
 
 
 def parse_title(title, *, scanner=_scanner):
-    r, rest = scanner.scan(title.strip())
+    r, rest = scanner.scan(title.strip().lstrip("#"))
     assert not rest
 
     itr = (line for line in r if line.strip())
