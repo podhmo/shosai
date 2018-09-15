@@ -4,7 +4,7 @@ import textwrap
 
 class ParseTitleTests(unittest.TestCase):
     def _callFUT(self, text):
-        from docbasesync.parsing import parse_title
+        from shosai.parsing import parse_title
         return parse_title(text)
 
     def test_it(self):
@@ -38,7 +38,7 @@ class ParseTitleTests(unittest.TestCase):
 
 class ParseArticleTests(unittest.TestCase):
     def _getTarget(self):
-        from docbasesync.parsing import parse_article
+        from shosai.parsing import parse_article
         return parse_article
 
     def _callFUT(self, text):
@@ -76,7 +76,7 @@ class ParseArticleTests(unittest.TestCase):
         self.assertEqual(parsed.content, "\n".join(text.strip().splitlines()[2:]).strip())
 
     def test_it__with_image(self):
-        from docbasesync.parsing import Image
+        from shosai.parsing import Image
         text = textwrap.dedent(
             """
             # section

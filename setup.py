@@ -22,7 +22,7 @@ tests_require = []
 testing_extras = tests_require + []
 
 setup(
-    name='docbasesync',
+    name='shosai',
     version='0.0.0',
     description='-',
     long_description=README + '\n\n' + CHANGES,
@@ -34,7 +34,7 @@ setup(
     author="",
     author_email="",
     url="",
-    packages=find_packages(exclude=["docbasesync.tests"]),
+    packages=find_packages(exclude=["shosai.tests"]),
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
@@ -43,10 +43,10 @@ setup(
         'docs': docs_extras,
     },
     tests_require=tests_require,
-    test_suite="docbasesync.tests",
+    test_suite="shosai.tests",
     entry_points="""
       [console_scripts]
-      docbasesync = docbasesync.commands.docbasesync:main
-      docbasesync-internal = docbasesync.commands.docbasesync_internal:main
+      shosai = shosai.commands.shosai:main
+      shosai-internal = shosai.commands.shosai_internal:main
 """
 )

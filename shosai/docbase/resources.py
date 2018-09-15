@@ -3,7 +3,7 @@ import logging
 import os.path
 import base64
 from requests import sessions
-from .langhelpers import reify
+from ..langhelpers import reify
 logger = logging.getLogger(__name__)
 
 

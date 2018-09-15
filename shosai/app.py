@@ -1,14 +1,14 @@
 import typing as t
 import logging
 import os.path
-from . import configuration
 from . import loading
-from . import resources
+from .docbase import configuration  # xxx
+from .docbase import resources  # xxx
 from .langhelpers import reify
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CONFIG_PATH = "~/.config/docbasesync/config.json"
+DEFAULT_CONFIG_PATH = "~/.config/shosai/config.json"
 DEFAULT_MAPPING_PATH = "./mapping.json"
 
 

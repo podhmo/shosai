@@ -2,7 +2,7 @@ import sys
 import json
 import logging
 import os.path
-from .langhelpers import reify
+from ..langhelpers import reify
 logger = logging.getLogger(__name__)
 
 

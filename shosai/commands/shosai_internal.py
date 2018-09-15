@@ -13,7 +13,7 @@ def attachment(
     paths: t.Sequence[str],
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import App
+    from shosai import App
     out = out or sys.stdout
     app = App(config_path)
     with app.resource as r:
@@ -29,7 +29,7 @@ def parse(
     path: str,
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import parsing
+    from shosai import parsing
     out = out or sys.stdout
     with open(path) as rf:
         parsed = parsing.parse_article(rf.read())
