@@ -46,6 +46,7 @@ setup(
     test_suite="docbasesync.tests",
     entry_points="""
       [console_scripts]
-      docbasesync = docbasesync.__main__:main
+      docbasesync = docbasesync.commands.docbasesync:main
+      docbasesync-internal = docbasesync.commands.docbasesync_internal:main
 """
 )
