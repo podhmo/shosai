@@ -1,5 +1,7 @@
 import typing as t
 import logging
+import os.path
+import base64
 from .langhelpers import reify
 from requests import sessions
 logger = logging.getLogger(__name__)
@@ -70,6 +72,22 @@ class Search:
 class Attachment:
     def __init__(self, app: Resource) -> None:
         self.app = app
+
+    def build_content_from_file(self, path, *, cache=None) -> t.Dict:
+        with open(path, "rb") as rf:
+            data = rf.read()
+        return self.build_content(path, data, cache=cache)
+
+    def build_content(self, path, data, *, cache=None) -> t.Dict:
+        name = os.path.basename(path)
+        if cache in name:
+            base, ext = os.path.splitext(name)
+            if not base[-1].isdigit():
+                name = f"{base}X.{ext}"
+        return {
+            "name": name,
+            "content": base64.b64encode(data).decode("ascii"),
+        }
 
     def __call__(self, contents):
         # [{"name": <str>, "content": <base64>}]

@@ -1,7 +1,6 @@
 import sys
 import typing as t
 import json
-import os.path
 import logging
 logger = logging.getLogger(__name__)
 
@@ -14,21 +13,13 @@ def attachment(
     paths: t.Sequence[str],
     out: t.Optional[t.IO] = None,
 ) -> None:
-    import base64
     from docbasesync import App
     out = out or sys.stdout
     app = App(config_path)
     with app.resource as r:
         contents = []
         for path in paths:
-            with open(path, "rb") as rf:
-                data = rf.read()
-            contents.append(
-                {
-                    "name": os.path.basename(path),
-                    "content": base64.b64encode(data).decode("ascii")
-                }
-            )
+            contents.append(r.attachment.build_content_from_file(path))
         data = r.attachment(contents)
     json.dump(data, out, indent=2, ensure_ascii=False)
 
