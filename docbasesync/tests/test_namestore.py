@@ -24,7 +24,7 @@ class NameStoreTests(unittest.TestCase):
         self.assertEqual(target[one], "foo")
 
         target[two] = "foo"
-        self.assertEqual(target[two], target.new_name("foo", 1))
+        self.assertEqual(target[two], target._generate_uid("foo", 1))
         self.assertEqual(target[two], "foo01")
 
         target[three] = "foo"
