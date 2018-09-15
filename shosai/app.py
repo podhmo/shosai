@@ -2,8 +2,12 @@ import typing as t
 import logging
 import os.path
 from . import loading
-from .docbase import configuration  # xxx
-from .docbase import resources  # xxx
+# from .docbase import configuration  # xxx
+# from .docbase import resources  # xxx
+# from .docbase import transform
+from .hatena import configuration  # xxx
+from .hatena import resources  # xxx
+from .hatena import transform  # xxx
 from .langhelpers import reify
 
 logger = logging.getLogger(__name__)
@@ -34,3 +38,7 @@ class App:
     @reify
     def resource(self) -> "Resource":
         return resources.Resource(self.profile)
+
+    @reify
+    def transform(self):
+        return transform

@@ -12,6 +12,8 @@ except IOError:
 
 install_requires = [
     "requests",
+    "requests_oauthlib",  # for hatena
+    "xmltodict",  # for hatena
     "mistune",
     "mypy_extensions",
 ]

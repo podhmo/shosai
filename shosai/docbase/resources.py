@@ -4,21 +4,14 @@ import logging
 import os.path
 import base64
 from requests import sessions
-from . import structure
 from ..langhelpers import reify
+from ..base.resources import LoggedRequestMixin
+from . import structure
 logger = logging.getLogger(__name__)
 
 
-class Session(sessions.Session):
-    def request(self, method, url, params=None, *args, **kwargs):
-        if params is not None:
-            logger.info("%s %s, params=%s", method, url, params)
-        else:
-            logger.info("%s %s", method, url)
-        response = super().request(method, url, *args, params=params, **kwargs)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
-        return response
+class Session(sessions.Session, LoggedRequestMixin):
+    logger = logger
 
 
 class Resource:

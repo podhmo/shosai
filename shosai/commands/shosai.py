@@ -16,6 +16,7 @@ def search(
     config_path: str,
     mapping_path: str,
     save: bool = False,
+    show_mapping: bool = False,
     query: t.Optional[str] = None,
     page: t.Optional[int] = None,
     per_page: t.Optional[int] = None,
@@ -26,12 +27,16 @@ def search(
     app = App(config_path, mapping_path=mapping_path)
     with app.resource as r:
         data = r.search(q=query, page=page, per_page=per_page)
-    json.dump(data, out, indent=2, ensure_ascii=False)
+    if show_mapping:
+        for _, mapping in app.transform.from_search_response(data):
+            json.dump(mapping, out, indent=2, ensure_ascii=False)
+            out.write(os.linesep)
+    else:
+        json.dump(data, out, indent=2, ensure_ascii=False)
     if save:
         with app.saver as append:
-            for post in data["posts"]:
-                post["tags"] = [t["name"] for t in post["tags"]]
-                append(post)
+            for post, mapping in app.transform.from_search_response(data):
+                append(post, mapping)
 
 
 def clone(
@@ -168,6 +173,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument('-c', '--config', required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("--save", action="store_true")
+    sparser.add_argument("--show-mapping", action="store_true")
     sparser.add_argument("-q", "--query", default=None)
     sparser.add_argument("--page", default=None, type=int)
     sparser.add_argument("--per_page", default=None, type=int)

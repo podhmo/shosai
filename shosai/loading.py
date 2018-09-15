@@ -3,6 +3,7 @@ import os.path
 import json
 import logging
 from .langhelpers import reify
+from .base import structure as basestructure
 logger = logging.getLogger(__name__)
 
 
@@ -60,7 +61,16 @@ class Saver:
     def __enter__(self):
         return self.append
 
-    def append(self, post, *, writefile=None, filepath=None, name=None, _retry=False):
+    def append(
+        self,
+        post: basestructure.PostDict,
+        mapping: basestructure.MappingDict,
+        *,
+        writefile=None,
+        filepath=None,
+        name=None,
+        _retry=False
+    ):
         title = post["title"]
         if filepath is None:
             if writefile is not None:
@@ -79,20 +89,18 @@ class Saver:
                 with open(filepath, "w") as wf:
                     tagspart = "".join([f"[{t}]" for t in post["tags"]])
                     wf.write(f"#{tagspart}{title}\n")
-                    wf.write(post["body"])
+                    wf.write(post["content"])
             except Exception:
                 if _retry:
                     raise
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 return self.append(
-                    post, writefile=writefile, filepath=filepath, name=name, _retry=True
+                    post, mapping, writefile=writefile, filepath=filepath, name=name, _retry=True
                 )
 
-        for k in ["tags", "body", "user", "comments"]:
-            post.pop(k, None)
         relpath = os.path.relpath(filepath, start=os.path.dirname(self.path))
-        post["file"] = relpath
-        self.data.append(post)
+        mapping["file"] = relpath
+        self.data.append(mapping)
 
     def __exit__(self, typ, val, tb):
         if not self.data:

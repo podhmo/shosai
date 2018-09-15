@@ -2,6 +2,17 @@ import typing as t
 import mypy_extensions as mx
 
 
+class MappingDict(mx.TypedDict):
+    id: int
+    title: str
+    draft: bool
+    url: str
+    created_at: str
+    scope: str
+    groups: t.Sequence[str]
+    file: str
+
+
 class ProfileDict(mx.TypedDict):
     token: str
     teamname: str
