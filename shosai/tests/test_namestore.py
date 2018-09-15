@@ -3,7 +3,7 @@ import unittest
 
 class NameStoreTests(unittest.TestCase):
     def _makeOne(self):
-        from docbasesync.langhelpers import NameStore
+        from shosai.langhelpers import NameStore
         return NameStore()
 
     def test_access_by_same_key(self):

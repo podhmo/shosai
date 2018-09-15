@@ -4,7 +4,7 @@ import os.path
 import json
 import logging
 import re  # xxx
-from docbasesync.langhelpers import (
+from shosai.langhelpers import (
     NameStore,
     normalize_linesep_text,
 )
@@ -21,7 +21,7 @@ def search(
     per_page: t.Optional[int] = None,
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import App
+    from shosai import App
     out = out or sys.stdout
     app = App(config_path, mapping_path=mapping_path)
     with app.resource as r:
@@ -42,7 +42,7 @@ def clone(
     name: t.Optional[str] = None,
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import App
+    from shosai import App
     out = out or sys.stdout
     app = App(config_path, mapping_path=mapping_path)
     with app.resource as r:
@@ -60,7 +60,7 @@ def pull(
     path: str,
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import App
+    from shosai import App
     out = out or sys.stdout
     app = App(config_path, mapping_path=mapping_path)
     with app.resource as r:
@@ -88,8 +88,8 @@ def push(
     groups: t.Optional[t.Sequence[str]] = None,
     out: t.Optional[t.IO] = None,
 ) -> None:
-    from docbasesync import App
-    from docbasesync import parsing
+    from shosai import App
+    from shosai import parsing
     out = out or sys.stdout
     app = App(config_path)
     with app.resource as r:
