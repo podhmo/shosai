@@ -2,9 +2,21 @@ import typing as t
 import logging
 import os.path
 import base64
-from .langhelpers import reify
 from requests import sessions
+from .langhelpers import reify
 logger = logging.getLogger(__name__)
+
+
+class Session(sessions.Session):
+    def request(self, method, url, params=None, *args, **kwargs):
+        if params is not None:
+            logger.info("%s %s, params=%s", method, url, params)
+        else:
+            logger.info("%s %s", method, url)
+        response = super().request(method, url, *args, params=params, **kwargs)
+        logger.info("status=%s, %s", response.status_code, url)
+        response.raise_for_status()
+        return response
 
 
 class Resource:
@@ -16,8 +28,8 @@ class Resource:
         return f"https://api.docbase.io/teams/{self.profile.teamname}".rstrip("/")
 
     @reify
-    def session(self) -> sessions.Session:
-        s = sessions.Session()
+    def session(self) -> Session:
+        s = Session()
         s.headers["X-DocBaseToken"] = self.profile.token
         return s
 
@@ -66,10 +78,7 @@ class Search:
         if per_page is not None:
             params["per_page"] = per_page
 
-        logger.info("GET %s, params=%s", url, params)
         response = app.session.get(url, params=params)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
         return response.json()
 
 
@@ -93,10 +102,7 @@ class Attachment:
         app = self.app
         url = f"{app.url}/attachments"
 
-        logger.info("POST %s, params=%s", url, [d["name"] for d in contents])
         response = app.session.post(url, json=contents)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
         return response.json()
 
 
@@ -107,10 +113,7 @@ class Fetch:
     def __call__(self, id) -> t.Dict:
         app = self.app
         url = f"{app.url}/posts/{id}"
-        logger.info("GET %s", url)
         response = app.session.get(url)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
         return response.json()
 
     def from_url(self, url) -> t.Dict:
@@ -165,18 +168,12 @@ class Post:
         app = self.app
         url = f"{app.url}/posts/{id}"
 
-        logger.info("PATCH %s", url)
         response = app.session.patch(url, json=params)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
         return response.json()
 
     def _create_post(self, params: t.Dict) -> t.Dict:
         app = self.app
         url = f"{app.url}/posts"
 
-        logger.info("POST %s", url)
         response = app.session.post(url, json=params)
-        logger.info("status=%s, %s", response.status_code, url)
-        response.raise_for_status()
         return response.json()
