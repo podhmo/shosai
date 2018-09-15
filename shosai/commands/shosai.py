@@ -39,6 +39,7 @@ def search(
                 append(post, mapping)
 
 
+# TODO: hatena
 def clone(
     *,
     config_path: str,
@@ -73,11 +74,10 @@ def pull(
         if meta is None:
             print(f"mapped file is not found {path}", file=sys.stderr)
             sys.exit(1)
-        post = r.fetch(meta["id"])
-        post["body"] = normalize_linesep_text(post["body"])
+        data = r.fetch(meta["id"])
     with app.saver as append:
-        post["tags"] = [t["name"] for t in post["tags"]]
-        append(post, filepath=meta["file"])
+        post, mapping = app.transform.from_fetch_response(data)
+        append(post, mapping, filepath=meta["file"])
 
 
 def push(

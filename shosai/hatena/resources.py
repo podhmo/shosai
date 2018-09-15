@@ -70,12 +70,13 @@ class Search:
         page: t.Optional[int] = None,
         per_page: t.Optional[int] = None,
     ) -> t.Sequence[t.Any]:
-        # TODO: params
+        params = {}
+        if q is not None:
+            params["page"] = q
         app = self.app
         url = f"{app.url}/atom/entry"
-        response = app.session.get(url)
-        data = xmltodict.parse(response.text, process_namespaces=False)
-        return data
+        response = app.session.get(url, params=params)
+        return xmltodict.parse(response.text, process_namespaces=False)
 
 
 class Attachment:
@@ -117,11 +118,11 @@ class Fetch:
     def __init__(self, app: Resource) -> None:
         self.app = app
 
-    # def __call__(self, id: int) -> structure.PostDict:
-    #     app = self.app
-    #     url = f"{app.url}/posts/{id}"
-    #     response = app.session.get(url)
-    #     return response.json()
+    def __call__(self, id: str) -> structure.PostDict:
+        app = self.app
+        url = f"{app.url}/atom/entry/{id}"
+        response = app.session.get(url)
+        return xmltodict.parse(response.text, process_namespaces=False)
 
     # def from_url(self, url: str) -> structure.PostDict:
     #     import re

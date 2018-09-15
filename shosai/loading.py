@@ -76,7 +76,7 @@ class Saver:
             if writefile is not None:
                 filepath = writefile
             elif name is None:
-                filepath = os.path.join(self.docdir, f"{post['id']}.md")
+                filepath = os.path.join(self.docdir, f"{mapping['name']}.md")
             else:
                 base, ext = os.path.splitext(name)
                 if not ext:

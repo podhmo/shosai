@@ -3,14 +3,8 @@ import shosai.base.structure as base
 from . import structure
 
 
-def post_from_post(entry: structure.PostDict, *, baseurl: str) -> base.PostDict:
-    id = ""
-    for link in entry["link"]:
-        if link.get("@rel") == "alternate":
-            id = link["@href"].replace(baseurl, "").lstrip("/")
-
+def post_from_post(entry: structure.PostDict) -> base.PostDict:
     return {
-        "id": id,
         "title": entry["title"],
         "tags": [c["@term"] for c in entry["category"]],
         "content": entry["content"]["#text"]
@@ -18,19 +12,22 @@ def post_from_post(entry: structure.PostDict, *, baseurl: str) -> base.PostDict:
     return entry
 
 
-def mapping_from_post(entry: structure.PostDict, *, baseurl: str) -> base.PostDict:
+def mapping_from_post(entry: structure.PostDict) -> base.PostDict:
     url = ""
     id = ""
+    name = ""
     for link in entry["link"]:
         if link.get("@rel") == "edit":
             url = link["@href"]
+            id = link["@href"].rsplit("/", 1)[-1]
         if link.get("@rel") == "alternate":
-            id = link["@href"].replace(baseurl, "").lstrip("/")
+            name = link["@href"].rsplit("/entry/", 1)[-1]
     return {
         "id": id,
+        "name": name,
         "title": entry["title"],
         "created_at": entry["published"],
-        "draft": False,
+        "draft": False,  # app:control/app:draft ?
         "url": url,
         "file": "",  # updated on loading.py
         "tags": [c["@term"] for c in entry["category"]],
@@ -39,12 +36,10 @@ def mapping_from_post(entry: structure.PostDict, *, baseurl: str) -> base.PostDi
 
 
 # todo: typing
-def from_search_response(data: t.Dict) -> t.Sequence[base.PostDict]:
-    baseurl = ""
-    for link in data["feed"]["link"]:
-        if link["@rel"] == "alternate":
-            baseurl = link["@href"]
-    return [
-        (post_from_post(entry, baseurl=baseurl), mapping_from_post(entry, baseurl=baseurl))
-        for entry in data["feed"]["entry"]
-    ]
+def from_search_response(data: t.Dict) -> t.Sequence[t.Tuple[base.PostDict, base.MappingDict]]:
+    return [(post_from_post(entry), mapping_from_post(entry)) for entry in data["feed"]["entry"]]
+
+
+def from_fetch_response(data: t.Dict) -> t.Tuple[base.PostDict, base.MappingDict]:
+    entry = data["entry"]
+    return (post_from_post(entry), mapping_from_post(entry))

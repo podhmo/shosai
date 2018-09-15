@@ -6,12 +6,11 @@ class PostDict(mx.TypedDict):
     content: str
     tags: t.Sequence[str]
     title: str
-    url: str
-    id: t.Any
 
 
 class MappingDict(mx.TypedDict):
-    id: int
+    id: t.Any
+    name: str
     title: str
     draft: bool
     url: str
