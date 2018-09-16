@@ -1,14 +1,18 @@
+import sys
 import typing as t
 import mypy_extensions as mx
 import logging
 import os.path
-import base64
 import xmltodict
 from requests_oauthlib import OAuth1Session
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
 logger = logging.getLogger(__name__)
+
+# see:
+# http://developer.hatena.ne.jp/ja/documents/blog/apis/atom
+# http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom
 
 
 class Session(OAuth1Session, LoggedRequestMixin):
@@ -83,35 +87,67 @@ class Attachment:
     def __init__(self, app: Resource) -> None:
         self.app = app
 
-    # def build_content_from_file(
-    #     self,
-    #     path: str,
-    #     *,
-    #     name=None,
-    # ) -> structure.AttachmentDict:
-    #     with open(path, "rb") as rf:
-    #         data = rf.read()
-    #     return self.build_content(path, data, name=name)
+    def build_content_from_file(
+        self,
+        path: str,
+        *,
+        name=None,
+    ) -> structure.AttachmentDict:
+        with open(path, "rb") as rf:
+            data = rf.read()
+        return self.build_content(path, data, name=name)
 
-    # def build_content(
-    #     self,
-    #     path: str,
-    #     data: bytes,
-    #     *,
-    #     name: t.Optional[str] = None,
-    # ) -> structure.AttachmentDict:
-    #     return {
-    #         "name": name or os.path.basename(path),
-    #         "content": base64.b64encode(data).decode("ascii"),
-    #     }
+    def build_content(
+        self,
+        path: str,
+        data: bytes,
+        *,
+        name: t.Optional[str] = None,
+    ) -> structure.AttachmentDict:
+        import base64
+        return {
+            "name": name or os.path.basename(path),
+            "content": base64.b64encode(data).decode("ascii"),
+        }
 
-    # def __call__(self, contents) -> t.Sequence[structure.AttachmentResultDict]:
-    #     # [{"name": <str>, "content": <base64>}]
-    #     app = self.app
-    #     url = f"{app.url}/attachments"
+    def __call__(self, contents: t.Sequence[structure.AttachmentDict]
+                 ) -> t.Sequence[structure.AttachmentResultDict]:
+        import mimetypes
+        app = self.app
+        url = "http://f.hatena.ne.jp/atom/post/"
 
-    #     response = app.session.post(url, json=contents)
-    #     return response.json()
+        results = []
+        for content in contents:
+            typ, _ = mimetypes.guess_type(content["name"])
+            doc = {
+                "entry": {
+                    "@xmlns": "http://purl.org/atom/ns#",
+                    "generator": "shosai",
+                    "title": content["name"],
+                    "content": {
+                        "@mode": "base64",
+                        "@type": typ,
+                        "#text": content["content"]
+                    },
+                },
+            }
+            xml = xmltodict.unparse(doc, full_document=False)
+            response = app.session.post(url, data=xml)
+            try:
+                # ./structure.py attachment response doc
+                response_doc = xmltodict.parse(response.text, process_namespaces=False)
+                result: structure.AttachmentResultDict = {
+                    "id": response_doc["entry"]["id"],
+                    "name": response_doc["entry"]["title"],
+                    "url": response_doc["entry"]["hatena:imageurl"],
+                    "hatena_syntax": response_doc["entry"]["hatena:syntax"],
+                    "issued": response_doc["entry"]["issued"],
+                }
+                results.append(result)
+            except Exception as e:
+                print(str(e), file=sys.stderr)
+                print(response.text, file=sys.stderr)
+        return results
 
 
 class Fetch:

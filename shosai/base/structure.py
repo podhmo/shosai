@@ -17,3 +17,14 @@ class MappingDict(mx.TypedDict):
     created_at: str
     file: str
     tags: t.Sequence[str]
+
+
+class AttachmentDict(mx.TypedDict):
+    name: str
+    content: str
+
+
+class AttachmentResultDict(mx.TypedDict):
+    id: t.Any
+    name: str
+    url: str
