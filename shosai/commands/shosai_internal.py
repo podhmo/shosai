@@ -26,14 +26,15 @@ def attachment(
 
 def parse(
     *,
-    path: str,
+    paths: t.Sequence[str],
     out: t.Optional[t.IO] = None,
 ) -> None:
     from shosai import parsing
     out = out or sys.stdout
-    with open(path) as rf:
-        parsed = parsing.parse_article(rf.read())
-    parsing.dump(parsed)
+    for path in paths:
+        with open(path) as rf:
+            parsed = parsing.parse_article(rf.read())
+        parsing.dump(parsed)
 
 
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
@@ -48,7 +49,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = parse
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument("path")
+    sparser.add_argument("paths", nargs="+")
 
     # attachment
     fn = attachment
