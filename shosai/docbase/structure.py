@@ -1,5 +1,17 @@
 import typing as t
 import mypy_extensions as mx
+from shosai.base import structure as base
+
+
+class MappingDict(mx.TypedDict):
+    id: int
+    title: str
+    draft: bool
+    url: str
+    created_at: str
+    scope: str
+    groups: t.Sequence[str]
+    file: str
 
 
 class ProfileDict(mx.TypedDict):
@@ -8,10 +20,16 @@ class ProfileDict(mx.TypedDict):
     username: str
 
 
-class MetaDict(mx.TypedDict):
-    next_page: t.Optional[str]
-    previous_page: t.Optional[str]
-    total: int
+class MetadataDict(mx.TypedDict):
+    id: int
+    name: str  # todo
+    title: str
+    draft: bool
+    url: str
+    created_at: str
+    scope: str
+    groups: t.Sequence[str]
+    file: str
 
 
 class TagDict(mx.TypedDict):
@@ -24,16 +42,11 @@ class UserDict(mx.TypedDict):
     profile_image_url: str
 
 
-class AttachmentDict(mx.TypedDict):
-    name: str
-    content: str
+AttachmentDict = base.AttachmentDict
 
 
-class AttachmentResultDict(mx.TypedDict):
-    id: int
-    name: str
+class AttachmentResultDict(base.AttachmentResultDict):
     size: int
-    url: str
     markdown: str
     created_at: str
 
