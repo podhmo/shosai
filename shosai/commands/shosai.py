@@ -38,7 +38,6 @@ def search(
                 append(post, mapping, savefile=True)  # xxx
 
 
-# TODO: hatena
 def clone(
     service: str,
     *,

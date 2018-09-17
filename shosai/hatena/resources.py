@@ -72,12 +72,13 @@ class Search:
         q: t.Optional[str] = None,
         page: t.Optional[int] = None,
         per_page: t.Optional[int] = None,
+        url: t.Optional[str] = None,
     ) -> t.Sequence[t.Any]:
         params = {}
         if q is not None:
             params["page"] = q
         app = self.app
-        url = f"{app.url}/atom/entry"
+        url = url or f"{app.url}/atom/entry"
         response = app.session.get(url, params=params)
         return xmllib.loads(response.text)
 
@@ -159,17 +160,40 @@ class Fetch:
         response = app.session.get(url)
         return xmllib.loads(response.text)
 
-    # def from_url(self, url: str) -> structure.PostDict:
-    #     import re
-    #     app = self.app
-    #     rx = re.compile(r"https://([^.]+).docbase.io/posts/(\d+)")
+    def from_url(self, url: str, *, pagination_life=10) -> structure.PostDict:
+        import re
+        app = self.app
+        rx = re.compile(r"https://.+/entry/([\d/]+)")
 
-    #     m = rx.search(url)
-    #     assert m is not None
-    #     team = m.group(1)
-    #     assert team == app.profile.teamname
-    #     id = m.group(2)
-    #     return self.__call__(id)
+        m = rx.search(url)
+        assert m is not None
+        part = m.group(1)
+
+        # search from recently uploaded articles
+        guessed_id = None
+        next_url = None
+        for _ in range(pagination_life):
+            response_dict = app.search(url=next_url)
+            for link in response_dict["feed"]["link"]:
+                if link["@rel"] == "next":
+                    next_url = link["@href"]
+                    break
+            for entry in response_dict["feed"]["entry"]:
+                matched = False
+                for link in entry["link"]:
+                    if link.get("@rel") == "alternate":
+                        matched = link["@href"].rsplit("/entry/", 1)[-1] == part
+                if not matched:
+                    continue
+                for link in entry["link"]:
+                    if link.get("@rel") == "edit":
+                        url = link["@href"]
+                        guessed_id = link["@href"].rsplit("/", 1)[-1]
+            if guessed_id:
+                break
+        if guessed_id is None:
+            raise ValueError(f"sorry, not found {url!r}")
+        return self.__call__(guessed_id)
 
 
 class Post:
