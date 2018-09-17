@@ -75,6 +75,30 @@ class ParseArticleTests(unittest.TestCase):
         self.assertEqual(parsed.tags, [])
         self.assertEqual(parsed.content, "\n".join(text.strip().splitlines()[2:]).strip())
 
+    def test_it3(self):
+        text = textwrap.dedent("""
+```code
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+```
+
+# sub section
+
+body
+        """).rstrip()
+        parsed = self._callFUT(text)
+        self.assertEqual(parsed.title, "sub section")
+        self.assertEqual(parsed.tags, [])
+        self.assertEqual(parsed.content, "\n".join(text.strip().splitlines()).strip())
+
     def test_it__with_image(self):
         from shosai.parsing import Image
         text = textwrap.dedent(

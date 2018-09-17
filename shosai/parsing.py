@@ -75,9 +75,16 @@ def parse_article(text: str) -> Parsed:
 
     title = html.unescape(result["title"].title)
     itr = iter(text.splitlines())
-    for line in itr:
+
+    # lstrip title
+    buf = []
+    title_found = False
+    finding_limit = 5
+    for line in itertools.islice(itr, finding_limit):
         if title in line:
+            title_found = True
             break
+        buf.append(line)
 
     # for section using === such as
     # <section title>
@@ -85,10 +92,13 @@ def parse_article(text: str) -> Parsed:
     #
     # text body
 
-    buf = [next(itr)]
-    if not buf[0].strip("="):
-        buf.pop()
-    content = "\n".join(itertools.chain(buf, itr)).strip()
+    headbuf = [next(itr)]
+    if not headbuf[0].strip("="):
+        headbuf.pop()
+    if title_found:
+        content = "\n".join(itertools.chain(headbuf, itr)).strip()
+    else:
+        content = "\n".join(itertools.chain(buf, headbuf, itr)).strip()
 
     return Parsed(
         title=title,
