@@ -4,10 +4,8 @@ import os.path
 import json
 import logging
 import re  # xxx
-from shosai.langhelpers import (
-    NameStore,
-    normalize_linesep_text,
-)
+from shosai.langhelpers import NameStore
+
 logger = logging.getLogger(__name__)
 
 

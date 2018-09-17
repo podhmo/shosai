@@ -48,11 +48,11 @@ class ParseArticleTests(unittest.TestCase):
         text = textwrap.dedent(
             """
             # [aaa][bb] [memo]hello
-            
+
             this is first article
-            
+
             ## subsection
-            
+
             - x
             - y
             - z
@@ -65,7 +65,7 @@ class ParseArticleTests(unittest.TestCase):
 
     def test_it2(self):
         text = textwrap.dedent("""
-        
+
         Timeseries Classification: KNN & DTW
         ===
         Mark Regan
@@ -80,7 +80,7 @@ class ParseArticleTests(unittest.TestCase):
         text = textwrap.dedent(
             """
             # section
-            
+
             ![foo](https://example.net/images/foo.png))
             ![bar](https://example.net/images/bar.png))
             ![boo](boo.png))

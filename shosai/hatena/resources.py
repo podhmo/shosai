@@ -1,6 +1,5 @@
 import sys
 import typing as t
-import mypy_extensions as mx
 import logging
 import os.path
 from requests_oauthlib import OAuth1Session
