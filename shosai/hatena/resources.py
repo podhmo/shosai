@@ -173,19 +173,6 @@ class Fetch:
     #     return self.__call__(id)
 
 
-class _PostParamsDictOptional(mx.TypedDict, total=False):
-    draft: bool  # default false
-    notice: bool  # default true
-    tags: t.Sequence[str]
-    scope: str  # default "everyone"
-    groups: t.Sequence[str]
-
-
-class PostParamsDict(_PostParamsDictOptional, mx.TypedDict, total=True):
-    title: str
-    body: str
-
-
 class Post:
     def __init__(self, app: Resource) -> None:
         self.app = app
