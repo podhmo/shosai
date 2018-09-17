@@ -4,9 +4,12 @@ from . import structure
 
 
 def post_from_post(entry: structure.PostDict) -> base.PostDict:
+    categories = entry.get("category", [])
+    if hasattr(categories, "keys"):
+        categories = [categories]
     return {
         "title": entry["title"],
-        "tags": [c["@term"] for c in entry["category"]],
+        "tags": [c["@term"] for c in categories],
         "content": entry["content"]["#text"]
     }
     return entry
@@ -27,10 +30,9 @@ def mapping_from_post(entry: structure.PostDict) -> base.PostDict:
         "name": name,
         "title": entry["title"],
         "created_at": entry["published"],
-        "draft": False,  # app:control/app:draft ?
+        "draft": entry["app:control"]["app:draft"] == "yes",
         "url": url,
         "file": "",  # updated on loading.py
-        "tags": [c["@term"] for c in entry["category"]],
     }
     return entry
 

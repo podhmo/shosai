@@ -3,11 +3,11 @@ import typing as t
 import mypy_extensions as mx
 import logging
 import os.path
-import xmltodict
 from requests_oauthlib import OAuth1Session
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
+from . import xmllib
 logger = logging.getLogger(__name__)
 
 # see:
@@ -80,7 +80,7 @@ class Search:
         app = self.app
         url = f"{app.url}/atom/entry"
         response = app.session.get(url, params=params)
-        return xmltodict.parse(response.text, process_namespaces=False)
+        return xmllib.loads(response.text)
 
 
 class Attachment:
@@ -131,11 +131,11 @@ class Attachment:
                     },
                 },
             }
-            xml = xmltodict.unparse(doc, full_document=False)
+            xml = xmllib.dumps(doc)
             response = app.session.post(url, data=xml)
             try:
                 # ./structure.py attachment response doc
-                response_doc = xmltodict.parse(response.text, process_namespaces=False)
+                response_doc = xmllib.loads(response.text)
                 result: structure.AttachmentResultDict = {
                     "id": response_doc["entry"]["id"],
                     "name": response_doc["entry"]["title"],
@@ -158,7 +158,7 @@ class Fetch:
         app = self.app
         url = f"{app.url}/atom/entry/{id}"
         response = app.session.get(url)
-        return xmltodict.parse(response.text, process_namespaces=False)
+        return xmllib.loads(response.text)
 
     # def from_url(self, url: str) -> structure.PostDict:
     #     import re
@@ -190,47 +190,60 @@ class Post:
     def __init__(self, app: Resource) -> None:
         self.app = app
 
-    # # todo: group/scope
-    # def __call__(
-    #     self,
-    #     title: str,
-    #     body: str,
-    #     *,
-    #     draft: bool = False,
-    #     notice: bool = False,
-    #     tags: t.Optional[t.Sequence[str]] = None,
-    #     id: t.Optional[str] = None,
-    #     scope: t.Optional[str] = None,
-    #     groups: t.Optional[t.Sequence[int]] = None,
-    # ) -> structure.PostDict:
-    #     params: PostParamsDict = {
-    #         "title": title,
-    #         "body": body,
-    #         "draft": draft,
-    #         "notice": notice,
-    #     }
-    #     if tags is not None:
-    #         params["tags"] = tags
-    #     if scope is not None:
-    #         params["scope"] = scope
-    #     if groups is not None:
-    #         params["groups"] = groups
+    @property
+    def author_name(self) -> str:
+        return self.app.profile.name
 
-    #     if id is None:
-    #         return self._create_post(params)
-    #     else:
-    #         return self._update_post(params, id=id)
+    def __call__(
+        self,
+        title: str,
+        body: str,
+        *,
+        draft: bool = False,
+        notice: bool = False,
+        tags: t.Optional[t.Sequence[str]] = None,
+        id: t.Optional[str] = None,
+        scope: t.Optional[str] = None,
+        groups: t.Optional[t.Sequence[int]] = None,
+    ) -> structure.PostDict:
+        # todo: meta data
+        doc = {
+            "entry": {
+                "@xmlns": "http://www.w3.org/2005/Atom",
+                "@xmlns:app": "http://www.w3.org/2007/app",
+                "title": title,
+                "author": {
+                    "name": self.author_name,
+                },
+                "content": {
+                    "@type": "text/plain",
+                    "#text": body,
+                },
+                # todo updated,using issued
+                "category": [{
+                    "@term": t
+                } for t in tags or []],
+                "app:control": {
+                    "app:draft": ("yes" if draft else "no"),
+                },
+            },
+        }
 
-    # def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
-    #     app = self.app
-    #     url = f"{app.url}/posts/{id}"
+        if id is None:
+            return self._create_post(doc)
+        else:
+            return self._update_post(doc, id=id)
 
-    #     response = app.session.patch(url, json=params)
-    #     return response.json()
+    def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
+        app = self.app
+        url = f"{app.url}/atom/entry/{id}"
+        xml = xmllib.dumps(params)
+        response = app.session.put(url, json=xml)
+        return xmllib.loads(response.text)
 
-    # def _create_post(self, params: t.Dict) -> structure.PostDict:
-    #     app = self.app
-    #     url = f"{app.url}/posts"
-
-    #     response = app.session.post(url, json=params)
-    #     return response.json()
+    def _create_post(self, params: t.Dict) -> structure.PostDict:
+        app = self.app
+        url = f"{app.url}/atom/entry"
+        xml = xmllib.dumps(params)
+        response = app.session.post(url, data=xml)
+        return xmllib.loads(response.text)

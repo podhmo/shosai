@@ -64,3 +64,7 @@ class Profile:
     @reify
     def hatena_id(self) -> str:
         return self.data["hatena_id"]
+
+    @reify
+    def name(self) -> str:
+        return self.hatena_id

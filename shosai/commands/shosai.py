@@ -36,7 +36,7 @@ def search(
     if save:
         with app.saver as append:
             for post, mapping in app.transform.from_search_response(data):
-                append(post, mapping)
+                append(post, mapping, savefile=True)  # xxx
 
 
 # TODO: hatena
@@ -77,7 +77,7 @@ def pull(
         data = r.fetch(meta["id"])
     with app.saver as append:
         post, mapping = app.transform.from_fetch_response(data)
-        append(post, mapping, filepath=meta["file"])
+        append(post, mapping, filepath=meta["file"], savefile=True)
 
 
 def push(
@@ -156,7 +156,8 @@ def push(
     json.dump(data, out, indent=2, ensure_ascii=False)
     if save:
         with app.saver as append:
-            append(data, writefile=path)
+            post, mapping = app.transform.from_fetch_response(data)
+            append(post, mapping, filepath=path, savefile=False)
 
 
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:

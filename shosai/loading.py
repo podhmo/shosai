@@ -66,16 +66,14 @@ class Saver:
         post: basestructure.PostDict,
         mapping: basestructure.MappingDict,
         *,
-        writefile=None,
+        savefile=False,
         filepath=None,
         name=None,
         _retry=False
     ):
         title = post["title"]
         if filepath is None:
-            if writefile is not None:
-                filepath = writefile
-            elif name is None:
+            if name is None:
                 filepath = os.path.join(self.docdir, f"{mapping['name']}.md")
             else:
                 base, ext = os.path.splitext(name)
@@ -83,7 +81,7 @@ class Saver:
                     ext = ".md"
                 filepath = os.path.join(self.docdir, f"{base}{ext}")
 
-        if writefile is None:
+        if savefile:
             try:
                 logger.info("write: %s", filepath)
                 with open(filepath, "w") as wf:
@@ -95,7 +93,7 @@ class Saver:
                     raise
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 return self.append(
-                    post, mapping, writefile=writefile, filepath=filepath, name=name, _retry=True
+                    post, mapping, savefile=savefile, filepath=filepath, name=name, _retry=True
                 )
 
         relpath = os.path.relpath(filepath, start=os.path.dirname(self.path))

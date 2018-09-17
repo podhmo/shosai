@@ -1,0 +1,2 @@
+- [はてなブログAtomPub - Hatena Developer Center](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom "はてなブログAtomPub - Hatena Developer Center")
+- [はてなフォトライフAtomAPI - Hatena Developer Center](http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom "はてなフォトライフAtomAPI - Hatena Developer Center")
