@@ -2,6 +2,7 @@ import sys
 import typing as t
 import logging
 import os.path
+import re
 from requests_oauthlib import OAuth1Session
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
@@ -161,8 +162,6 @@ class Fetch:
         return xmllib.loads(response.text)
 
     def from_url(self, url: str, *, pagination_life=10) -> structure.PostDict:
-        import re
-        app = self.app
         rx = re.compile(r"https://.+/entry/([\d/]+)")
 
         m = rx.search(url)
@@ -170,7 +169,13 @@ class Fetch:
         part = m.group(1)
 
         # search from recently uploaded articles
-        guessed_id = None
+        guessed_id = self._guess_id(part, pagination_life=pagination_life)
+        if guessed_id is None:
+            raise ValueError(f"sorry, not found {url!r}")
+        return self.__call__(guessed_id)
+
+    def _guess_id(self, part: str, *, pagination_life: int) -> str:
+        app = self.app
         next_url = None
         for _ in range(pagination_life):
             response_dict = app.search(url=next_url)
@@ -187,13 +192,9 @@ class Fetch:
                     continue
                 for link in entry["link"]:
                     if link.get("@rel") == "edit":
-                        url = link["@href"]
                         guessed_id = link["@href"].rsplit("/", 1)[-1]
-            if guessed_id:
-                break
-        if guessed_id is None:
-            raise ValueError(f"sorry, not found {url!r}")
-        return self.__call__(guessed_id)
+                        return guessed_id
+        return None
 
 
 class Post:
