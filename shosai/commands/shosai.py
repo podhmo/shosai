@@ -89,8 +89,6 @@ def push(
     draft: t.Optional[bool] = None,
     notice: bool = False,
     id: t.Optional[str] = None,
-    scope: t.Optional[str] = None,
-    groups: t.Optional[t.Sequence[str]] = None,
     out: t.Optional[t.IO] = None,
 ) -> None:
     from shosai import App
@@ -102,13 +100,7 @@ def push(
             parsed = parsing.parse_article(rf.read())
 
         meta = app.loader.lookup(path)
-        tags = parsed.tags
-        if meta is not None:
-            if draft is None:
-                draft = meta.get("draft", True)
-            id = id or meta["id"]
-            scope = scope or meta["scope"]
-            groups = groups or meta["groups"]
+        id = id or (meta and meta["id"])
 
         # parse article and upload images as attachments.
         attachments = []
@@ -146,12 +138,11 @@ def push(
         data = r.post(
             parsed.title or (meta and meta.get("title")) or "",
             content,
-            tags=tags,
+            tags=parsed.tags,
             id=id,
-            scope=scope,
-            groups=groups,
             draft=bool(draft),
             notice=notice,
+            meta=meta,
         )
     json.dump(data, out, indent=2, ensure_ascii=False)
     if save:
@@ -207,8 +198,6 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--draft", action="store_true", default=None)
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--id")
-    sparser.add_argument("--scope")
-    sparser.add_argument("--group", dest="groups", action="append")
 
     args = parser.parse_args(argv)
     params = vars(args).copy()

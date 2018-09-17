@@ -20,10 +20,16 @@ class ProfileDict(mx.TypedDict):
     username: str
 
 
-class MetaDict(mx.TypedDict):
-    next_page: t.Optional[str]
-    previous_page: t.Optional[str]
-    total: int
+class MetadataDict(mx.TypedDict):
+    id: int
+    name: str  # todo
+    title: str
+    draft: bool
+    url: str
+    created_at: str
+    scope: str
+    groups: t.Sequence[str]
+    file: str
 
 
 class TagDict(mx.TypedDict):

@@ -52,8 +52,14 @@ class Resource:
         return Post(self)
 
 
+class SearchResponseMetaDict(mx.TypedDict):
+    next_page: t.Optional[str]
+    previous_page: t.Optional[str]
+    total: int
+
+
 class SearchResponseDict(mx.TypedDict):
-    meta: structure.MetaDict
+    meta: SearchResponseMetaDict
     posts: t.Sequence[structure.PostDict]
 
 
@@ -173,8 +179,7 @@ class Post:
         notice: bool = False,
         tags: t.Optional[t.Sequence[str]] = None,
         id: t.Optional[str] = None,
-        scope: t.Optional[str] = None,
-        groups: t.Optional[t.Sequence[int]] = None,
+        meta: t.Optional[structure.MetadataDict] = None,
     ) -> structure.PostDict:
         params: PostParamsDict = {
             "title": title,
@@ -184,10 +189,12 @@ class Post:
         }
         if tags is not None:
             params["tags"] = tags
-        if scope is not None:
-            params["scope"] = scope
-        if groups is not None:
-            params["groups"] = groups
+
+        if meta is not None:
+            if draft is None:
+                draft = meta.get("draft", True)
+            params["scope"] = meta["scope"]
+            params["groups"] = meta["groups"]
 
         if id is None:
             return self._create_post(params)

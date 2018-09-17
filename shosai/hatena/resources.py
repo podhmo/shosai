@@ -203,10 +203,8 @@ class Post:
         notice: bool = False,
         tags: t.Optional[t.Sequence[str]] = None,
         id: t.Optional[str] = None,
-        scope: t.Optional[str] = None,
-        groups: t.Optional[t.Sequence[int]] = None,
+        meta: t.Optional[structure.MetadataDict] = None,
     ) -> structure.PostDict:
-        # todo: meta data
         doc = {
             "entry": {
                 "@xmlns": "http://www.w3.org/2005/Atom",
@@ -219,15 +217,20 @@ class Post:
                     "@type": "text/plain",
                     "#text": body,
                 },
-                # todo updated,using issued
-                "category": [{
-                    "@term": t
-                } for t in tags or []],
                 "app:control": {
                     "app:draft": ("yes" if draft else "no"),
                 },
             },
         }
+
+        if tags:
+            doc["entry"]["category"] = [{"@term": t} for t in tags or []]
+
+        created_at = None
+        if meta is not None:
+            created_at = created_at or meta.get("created_at")
+        if created_at is not None:
+            doc["entry"]["updated"] = created_at
 
         if id is None:
             return self._create_post(doc)
@@ -237,13 +240,13 @@ class Post:
     def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/atom/entry/{id}"
-        xml = xmllib.dumps(params)
-        response = app.session.put(url, json=xml)
+        xml = xmllib.dumps_as_bytes(params)
+        response = app.session.put(url, data=xml)
         return xmllib.loads(response.text)
 
     def _create_post(self, params: t.Dict) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/atom/entry"
-        xml = xmllib.dumps(params)
+        xml = xmllib.dumps_as_bytes(params)
         response = app.session.post(url, data=xml)
         return xmllib.loads(response.text)
