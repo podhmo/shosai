@@ -1,6 +1,6 @@
 import typing as t
 import mypy_extensions as mx
-from shosai.structure import base
+from shosai.base import structure as base
 
 
 class MappingDict(mx.TypedDict):
@@ -45,7 +45,7 @@ class UserDict(mx.TypedDict):
 AttachmentDict = base.AttachmentDict
 
 
-class AttachmentResultDict(base.AttachmentResponseDict):
+class AttachmentResultDict(base.AttachmentResultDict):
     size: int
     markdown: str
     created_at: str

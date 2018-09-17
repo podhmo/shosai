@@ -14,10 +14,15 @@ def post_from_post(post: structure.PostDict) -> base.PostDict:
 
 def mapping_from_post(post: structure.PostDict) -> structure.MappingDict:
     data = post.copy()
-    for k in ["tags", "body", "user", "comments"]:
+    for k in ["tags", "body", "user", "comments", "content"]:
         data.pop(k, None)
+    data["name"] = data["id"]
     return data
 
 
 def from_search_response(data: SearchResponseDict) -> t.Sequence[base.PostDict]:
-    return [(post_from_post(post), mapping_from_post) for post in data["posts"]]
+    return [(post_from_post(post), mapping_from_post(post)) for post in data["posts"]]
+
+
+def from_fetch_response(data: structure.PostDict) -> t.Tuple[base.PostDict, base.MappingDict]:
+    return (post_from_post(data), mapping_from_post(data))

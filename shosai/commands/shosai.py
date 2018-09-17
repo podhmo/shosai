@@ -54,11 +54,10 @@ def clone(
     out = out or sys.stdout
     app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
-        post = r.fetch.from_url(url)
-        post["body"] = normalize_linesep_text(post["body"])
+        data = r.fetch.from_url(url)
     with app.saver as append:
-        post["tags"] = [t["name"] for t in post["tags"]]
-        append(post, name=name)
+        post, mapping = app.transform.from_fetch_response(data)
+        append(post, mapping, name=name, savefile=True)
 
 
 def pull(
