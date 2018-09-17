@@ -185,12 +185,18 @@ class Post:
         title: str,
         body: str,
         *,
-        draft: bool = False,
+        draft: t.Optional[bool] = None,
         notice: bool = False,
         tags: t.Optional[t.Sequence[str]] = None,
         id: t.Optional[str] = None,
         meta: t.Optional[structure.MetadataDict] = None,
     ) -> structure.PostDict:
+        created_at = None
+        if meta is not None:
+            created_at = meta["created_at"]
+            if draft is None:
+                draft = meta["draft"]
+
         doc = {
             "entry": {
                 "@xmlns": "http://www.w3.org/2005/Atom",
@@ -204,7 +210,7 @@ class Post:
                     "#text": body,
                 },
                 "app:control": {
-                    "app:draft": ("yes" if draft else "no"),
+                    "app:draft": ("yes" if (draft is None or draft) else "no"),
                 },
             },
         }
@@ -212,9 +218,6 @@ class Post:
         if tags:
             doc["entry"]["category"] = [{"@term": t} for t in tags or []]
 
-        created_at = None
-        if meta is not None:
-            created_at = created_at or meta.get("created_at")
         if created_at is not None:
             doc["entry"]["updated"] = created_at
 

@@ -141,7 +141,7 @@ def push(
             content,
             tags=parsed.tags,
             id=id,
-            draft=bool(draft),
+            draft=draft,
             notice=notice,
             meta=meta,
         )
@@ -213,7 +213,7 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("--unsave", action="store_false", dest="save")
     sparser.add_argument("path")
-    sparser.add_argument("--draft", action="store_true", default=None)
+    sparser.add_argument("--publish", action="store_false", dest="draft", default=None)
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--id")
 

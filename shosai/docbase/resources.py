@@ -175,7 +175,7 @@ class Post:
         title: str,
         body: str,
         *,
-        draft: bool = False,
+        draft: t.Optional[bool] = None,
         notice: bool = False,
         tags: t.Optional[t.Sequence[str]] = None,
         id: t.Optional[str] = None,
@@ -184,7 +184,7 @@ class Post:
         params: PostParamsDict = {
             "title": title,
             "body": body,
-            "draft": draft,
+            "draft": (draft is None) or bool(draft),  # default is draft=True
             "notice": notice,
         }
         if tags is not None:
@@ -192,7 +192,7 @@ class Post:
 
         if meta is not None:
             if draft is None:
-                draft = meta.get("draft", True)
+                draft = meta["draft"]
             params["scope"] = meta["scope"]
             params["groups"] = meta["groups"]
 
