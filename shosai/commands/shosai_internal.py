@@ -9,13 +9,14 @@ def attachment(
     *,
     config_path: str,
     mapping_path: str,
+    service: str,
     save: bool = True,
     paths: t.Sequence[str],
     out: t.Optional[t.IO] = None,
 ) -> None:
     from shosai import App
     out = out or sys.stdout
-    app = App(config_path)
+    app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
         contents = []
         for path in paths:
@@ -57,6 +58,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.set_defaults(subcommand=fn)
     sparser.add_argument('-c', '--config', required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
+    sparser.add_argument('--service', default="docbase", choices=["hatena", "docbase"])
     sparser.add_argument("--save", action="store_true")
     sparser.add_argument("paths", nargs="+")
 

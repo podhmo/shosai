@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def search(
+    service: str,
     *,
     config_path: str,
     mapping_path: str,
@@ -24,7 +25,7 @@ def search(
 ) -> None:
     from shosai import App
     out = out or sys.stdout
-    app = App(config_path, mapping_path=mapping_path)
+    app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
         data = r.search(q=query, page=page, per_page=per_page)
     if show_mapping:
@@ -41,6 +42,7 @@ def search(
 
 # TODO: hatena
 def clone(
+    service: str,
     *,
     config_path: str,
     mapping_path: str,
@@ -50,7 +52,7 @@ def clone(
 ) -> None:
     from shosai import App
     out = out or sys.stdout
-    app = App(config_path, mapping_path=mapping_path)
+    app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
         post = r.fetch.from_url(url)
         post["body"] = normalize_linesep_text(post["body"])
@@ -60,6 +62,7 @@ def clone(
 
 
 def pull(
+    service: str,
     *,
     config_path: str,
     mapping_path: str,
@@ -68,7 +71,7 @@ def pull(
 ) -> None:
     from shosai import App
     out = out or sys.stdout
-    app = App(config_path, mapping_path=mapping_path)
+    app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
         meta = app.loader.lookup(path)
         if meta is None:
@@ -81,6 +84,7 @@ def pull(
 
 
 def push(
+    service: str,
     *,
     config_path: str,
     mapping_path: str,
@@ -94,7 +98,7 @@ def push(
     from shosai import App
     from shosai import parsing
     out = out or sys.stdout
-    app = App(config_path)
+    app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
         with open(path) as rf:
             parsed = parsing.parse_article(rf.read())
@@ -153,8 +157,25 @@ def push(
 
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
+    parser = argparse.ArgumentParser(description=None, add_help=False)
+    subparsers = parser.add_subparsers(required=True, dest="service")
+
+    service = "docbase"
+    sparser = subparsers.add_parser(service, description=f"shosai for {service}", add_help=False)
+    sparser.set_defaults(service=service)
+
+    service = "hatena"
+    sparser = subparsers.add_parser(service, description=f"shosai for {service}", add_help=False)
+    sparser.set_defaults(service=service)
+
+    args, rest_argv = parser.parse_known_args(argv)
+    return submain(args.service, rest_argv)
+
+
+def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
+    import argparse
     parser = argparse.ArgumentParser(description=None)
-    parser.print_usage = parser.print_help
+    parser.print_usage = parser.print_help  # hack
     parser.add_argument('--log', default="INFO", choices=list(logging._nameToLevel.keys()))
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
 
@@ -203,7 +224,7 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     params = vars(args).copy()
 
     logging.basicConfig(level=getattr(logging, params.pop('log')), stream=sys.stderr)
-    params.pop("subcommand")(**params)
+    return params.pop("subcommand")(service, **params)
 
 
 if __name__ == '__main__':
