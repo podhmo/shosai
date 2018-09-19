@@ -220,7 +220,13 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     params = vars(args).copy()
 
     logging.basicConfig(level=getattr(logging, params.pop('log')), stream=sys.stderr)
-    return params.pop("subcommand")(service, **params)
+    import requests
+    try:
+        return params.pop("subcommand")(service, **params)
+    except requests.exceptions.HTTPError as e:
+        logger.warn("%s -- %r", e, e.response.text)
+        logger.debug(str(e), exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
