@@ -10,7 +10,7 @@ from . import structure
 logger = logging.getLogger(__name__)
 
 
-class Session(sessions.Session, LoggedRequestMixin):
+class Session(LoggedRequestMixin, sessions.Session):
     logger = logger
 
 

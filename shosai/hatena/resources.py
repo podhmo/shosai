@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom
 
 
-class Session(OAuth1Session, LoggedRequestMixin):
+class Session(LoggedRequestMixin, OAuth1Session):
     logger = logger
 
 
