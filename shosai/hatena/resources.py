@@ -3,11 +3,13 @@ import typing as t
 import logging
 import os.path
 import re
+import requests
 from requests_oauthlib import OAuth1Session
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
 from . import xmllib
+from . import concurrentlib
 logger = logging.getLogger(__name__)
 
 # see:
@@ -117,8 +119,7 @@ class Attachment:
         app = self.app
         url = "http://f.hatena.ne.jp/atom/post/"
 
-        results = []
-        for content in contents:
+        def fetch(content: structure.AttachmentDict) -> structure.AttachmentResultDict:
             typ, _ = mimetypes.guess_type(content["name"])
             doc = {
                 "entry": {
@@ -134,20 +135,26 @@ class Attachment:
             }
             xml = xmllib.dumps(doc)
             response = app.session.post(url, data=xml)
-            try:
-                # ./structure.py attachment response doc
-                response_doc = xmllib.loads(response.text)
-                result: structure.AttachmentResultDict = {
-                    "id": response_doc["entry"]["id"],
-                    "name": response_doc["entry"]["title"],
-                    "url": response_doc["entry"]["hatena:imageurl"],
-                    "hatena_syntax": response_doc["entry"]["hatena:syntax"],
-                    "issued": response_doc["entry"]["issued"],
-                }
-                results.append(result)
-            except Exception as e:
+            # ./structure.py attachment response doc
+            response_doc = xmllib.loads(response.text)
+            result: structure.AttachmentResultDict = {
+                "id": response_doc["entry"]["id"],
+                "name": response_doc["entry"]["title"],
+                "url": response_doc["entry"]["hatena:imageurl"],
+                "hatena_syntax": response_doc["entry"]["hatena:syntax"],
+                "issued": response_doc["entry"]["issued"],
+            }
+            return result
+
+        results = []
+        for result in concurrentlib.map(fetch, contents):
+            if isinstance(result, Exception):
+                e = result
                 print(str(e), file=sys.stderr)
-                print(response.text, file=sys.stderr)
+                if isinstance(e, requests.exceptions.HTTPError):
+                    print(e.response.text, file=sys.stderr)
+            else:
+                results.append(result)
         return results
 
 
