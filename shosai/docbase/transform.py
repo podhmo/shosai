@@ -14,7 +14,7 @@ def post_from_post(post: structure.PostDict) -> base.PostDict:
 
 def mapping_from_post(post: structure.PostDict) -> structure.MappingDict:
     data = post.copy()
-    for k in ["tags", "body", "user", "comments", "content"]:
+    for k in ["tags", "body", "comments", "content"]:
         data.pop(k, None)
     data["name"] = data["id"]
     return data

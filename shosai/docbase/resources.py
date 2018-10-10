@@ -51,6 +51,9 @@ class Resource:
     def post(self) -> "Post":
         return Post(self)
 
+    def is_author(self, userdata: t.Union[t.Dict, str]):
+        return self.profile.username == userdata
+
 
 class SearchResponseMetaDict(mx.TypedDict):
     next_page: t.Optional[str]
@@ -193,8 +196,11 @@ class Post:
         if meta is not None:
             if draft is None:
                 params["draft"] = meta["draft"]
-            params["scope"] = meta["scope"]
-            params["groups"] = meta["groups"]
+
+            # xxx: passing scope is only owner or team-admin(same settings are also invalid)
+            if self.app.is_author(meta["user"]["name"]):
+                params["scope"] = meta["scope"]
+                params["groups"] = meta["groups"]
 
         if id is None:
             return self._create_post(params)
@@ -204,7 +210,6 @@ class Post:
     def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
         app = self.app
         url = f"{app.url}/posts/{id}"
-
         response = app.session.patch(url, json=params)
         return response.json()
 
