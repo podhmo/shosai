@@ -1,1 +1,7 @@
+0.0.2
 
+- fix bug for docbase, treating metadata (scope, groups, draft)
+
+0.0.1
+
+- first release
