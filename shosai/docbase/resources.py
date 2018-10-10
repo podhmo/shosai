@@ -192,7 +192,7 @@ class Post:
 
         if meta is not None:
             if draft is None:
-                draft = meta["draft"]
+                params["draft"] = meta["draft"]
             params["scope"] = meta["scope"]
             params["groups"] = meta["groups"]
 
