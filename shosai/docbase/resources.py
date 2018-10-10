@@ -201,6 +201,8 @@ class Post:
             if self.app.is_author(meta["user"]["name"]):
                 params["scope"] = meta["scope"]
                 params["groups"] = meta["groups"]
+            else:
+                params.pop("draft", None)
 
         if id is None:
             return self._create_post(params)
