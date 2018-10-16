@@ -200,7 +200,7 @@ class Post:
             # xxx: passing scope is only owner or team-admin(same settings are also invalid)
             if self.app.is_author(meta["user"]["name"]):
                 params["scope"] = meta["scope"]
-                params["groups"] = meta["groups"]
+                params["groups"] = [g["id"] for g in meta["groups"]]
             else:
                 params.pop("draft", None)
 
