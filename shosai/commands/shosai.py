@@ -110,7 +110,7 @@ def push(
         for image in parsed.images:
             if "://" in image.src:
                 continue
-            imagepath = os.path.join(os.path.dirname(path), image.src)
+            imagepath = os.path.join(os.path.dirname(path), image.src).strip("'").strip('"')
             if not os.path.exists(imagepath):
                 logger.info("image: %s is not found (where %s)", imagepath, path)
                 continue
