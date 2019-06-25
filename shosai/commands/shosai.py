@@ -20,8 +20,10 @@ def search(
     page: t.Optional[int] = None,
     per_page: t.Optional[int] = None,
     out: t.Optional[t.IO] = None,
+    verbose: bool = False,
 ) -> None:
     from shosai import App
+
     out = out or sys.stdout
     app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
@@ -46,8 +48,10 @@ def clone(
     url: str,
     name: t.Optional[str] = None,
     out: t.Optional[t.IO] = None,
+    verbose: bool = False,
 ) -> None:
     from shosai import App
+
     out = out or sys.stdout
     app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
@@ -64,8 +68,10 @@ def pull(
     mapping_path: str,
     path: str,
     out: t.Optional[t.IO] = None,
+    verbose: bool = False,
 ) -> None:
     from shosai import App
+
     out = out or sys.stdout
     app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
@@ -90,9 +96,11 @@ def push(
     notice: bool = False,
     id: t.Optional[str] = None,
     out: t.Optional[t.IO] = None,
+    verbose: bool = False,
 ) -> None:
     from shosai import App
     from shosai import parsing
+
     out = out or sys.stdout
     app = App(config_path, service=service, mapping_path=mapping_path)
     with app.resource as r:
@@ -120,7 +128,9 @@ def push(
                 continue
             namestore[image.src] = os.path.basename(imagepath)
             attachments.append(
-                r.attachment.build_content_from_file(imagepath, name=namestore[image.src])
+                r.attachment.build_content_from_file(
+                    imagepath, name=namestore[image.src]
+                )
             )
         if attachments:
             logger.info("attachments is found, the length is %d", len(attachments))
@@ -146,7 +156,8 @@ def push(
             notice=notice,
             meta=meta,
         )
-    json.dump(data, out, indent=2, ensure_ascii=False)
+    if verbose:
+        json.dump(data, out, indent=2, ensure_ascii=False)
     if save:
         with app.saver as append:
             post, mapping = app.transform.from_fetch_response(data)
@@ -155,15 +166,20 @@ def push(
 
 def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
+
     parser = argparse.ArgumentParser(description=None, add_help=False)
     subparsers = parser.add_subparsers(required=True, dest="service")
 
     service = "docbase"
-    sparser = subparsers.add_parser(service, description=f"shosai for {service}", add_help=False)
+    sparser = subparsers.add_parser(
+        service, description=f"shosai for {service}", add_help=False
+    )
     sparser.set_defaults(service=service)
 
     service = "hatena"
-    sparser = subparsers.add_parser(service, description=f"shosai for {service}", add_help=False)
+    sparser = subparsers.add_parser(
+        service, description=f"shosai for {service}", add_help=False
+    )
     sparser.set_defaults(service=service)
 
     args, rest_argv = parser.parse_known_args(argv)
@@ -172,16 +188,23 @@ def main(argv: t.Optional[t.Sequence[str]] = None) -> None:
 
 def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     import argparse
+
     parser = argparse.ArgumentParser(description=None)
     parser.print_usage = parser.print_help  # hack
-    parser.add_argument('--log', default="INFO", choices=list(logging._nameToLevel.keys()))
+    parser.add_argument(
+        "--logging",
+        default="INFO",
+        choices=list(logging._nameToLevel.keys()),
+        dest="log",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true")
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
 
     # search
     fn = search
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("-c", "--config", required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("--save", action="store_true")
     sparser.add_argument("--show-mapping", action="store_true")
@@ -193,7 +216,7 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = clone
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("-c", "--config", required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("url")
     sparser.add_argument("--name")
@@ -202,7 +225,7 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = pull
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("-c", "--config", required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("path")
 
@@ -210,7 +233,7 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     fn = push
     sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
     sparser.set_defaults(subcommand=fn)
-    sparser.add_argument('-c', '--config', required=False, dest="config_path")
+    sparser.add_argument("-c", "--config", required=False, dest="config_path")
     sparser.add_argument("--mapping", default=None, type=int, dest="mapping_path")
     sparser.add_argument("--unsave", action="store_false", dest="save")
     sparser.add_argument("path")
@@ -221,8 +244,9 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     args = parser.parse_args(argv)
     params = vars(args).copy()
 
-    logging.basicConfig(level=getattr(logging, params.pop('log')), stream=sys.stderr)
+    logging.basicConfig(level=getattr(logging, params.pop("log")), stream=sys.stderr)
     import requests
+
     try:
         return params.pop("subcommand")(service, **params)
     except requests.exceptions.HTTPError as e:
@@ -231,5 +255,5 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
