@@ -19,8 +19,10 @@ class App:
         service: str,  # ("hatena", "docbase")
         mapping_path: t.Optional[str] = None,
     ) -> None:
-        self.config_path = config_path or os.path.expanduser(config_path or DEFAULT_CONFIG_PATH)
-        self.mapping_path = mapping_path or DEFAULT_MAPPING_PATH
+        self.config_path = config_path or os.path.expanduser(
+            config_path or DEFAULT_CONFIG_PATH
+        )
+        self.mapping_path = rfind_path("mapping.json", default=DEFAULT_MAPPING_PATH)
         self.service = service
 
     @reify
@@ -50,3 +52,25 @@ class App:
     @reify
     def transform(self):
         return import_module(f"shosai.{self.service}.transform")
+
+
+def _iter_parents(filename, current=None):
+    current = os.path.normpath(os.path.abspath(current or os.getcwd()))
+    while True:
+        yield os.path.join(current, filename)
+        if current == "/":
+            break
+        current, dropped = os.path.split(current)
+
+
+def rfind_path(filename, current=None, default=None) -> str:
+    """find path, recursively, to parent direction.
+
+    start path = "/foo/bar/boo", filename = "config.ini"
+    finding candidates are ["/foo/bar/boo/config.ini", "/foo/bar/config.ini", "/foo/config.ini", "/config.ini"]
+    """
+    for path in _iter_parents(filename, current):
+        logger.debug("check: %s", path)
+        if os.path.exists(path):
+            return path
+    return default
