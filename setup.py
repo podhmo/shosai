@@ -26,7 +26,7 @@ testing_extras = tests_require + []
 
 setup(
     name="shosai",
-    version="0.0.3",
+    version="0.0.4",
     description="-",
     long_description=README + "\n\n" + CHANGES,
     classifiers=[

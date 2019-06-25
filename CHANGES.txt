@@ -1,3 +1,8 @@
+0.0.4
+
+- `--verbose` option
+- rfind, when finding mapping.json
+
 0.0.2
 
 - fix bug for docbase, treating metadata (scope, groups, draft)
