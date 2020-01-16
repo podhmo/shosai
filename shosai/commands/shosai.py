@@ -27,7 +27,8 @@ def auth(
         ),
         file=sys.stderr,
     )
-    json.dump(c.CONFIG_SKELETON, out, indent=2, ensure_ascii=False)
+    d = {app.service: c.CONFIG_SKELETON}
+    json.dump(d, out, indent=2, ensure_ascii=False)
     print("", file=out)
 
     import webbrowser
