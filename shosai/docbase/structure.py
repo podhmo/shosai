@@ -1,9 +1,9 @@
 import typing as t
-import mypy_extensions as mx
+import typing_extensions as tx
 from shosai.base import structure as base
 
 
-class MappingDict(mx.TypedDict):
+class MappingDict(tx.TypedDict):
     id: int
     title: str
     draft: bool
@@ -14,13 +14,13 @@ class MappingDict(mx.TypedDict):
     file: str
 
 
-class ProfileDict(mx.TypedDict):
+class ProfileDict(tx.TypedDict):
     token: str
     teamname: str
     username: str
 
 
-class MetadataDict(mx.TypedDict):
+class MetadataDict(tx.TypedDict):
     id: int
     name: str  # todo
     title: str
@@ -32,11 +32,11 @@ class MetadataDict(mx.TypedDict):
     file: str
 
 
-class TagDict(mx.TypedDict):
+class TagDict(tx.TypedDict):
     name: str
 
 
-class UserDict(mx.TypedDict):
+class UserDict(tx.TypedDict):
     id: int
     name: str
     profile_image_url: str
@@ -51,7 +51,7 @@ class AttachmentResultDict(base.AttachmentResultDict):
     created_at: str
 
 
-class PostDict(mx.TypedDict):
+class PostDict(tx.TypedDict):
     body: str
     comments: t.Sequence[t.Dict]  # untyped
     created_at: str

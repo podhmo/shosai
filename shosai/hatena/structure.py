@@ -1,9 +1,9 @@
 import typing as t
-import mypy_extensions as mx
+import typing_extensions as tx
 from shosai.base import structure as base
 
 
-class ProfileDict(mx.TypedDict):
+class ProfileDict(tx.TypedDict):
     blog_id: str
     client_id: str
     client_secret: str
@@ -12,7 +12,7 @@ class ProfileDict(mx.TypedDict):
     hatena_id: str
 
 
-class MetadataDict(mx.TypedDict):
+class MetadataDict(tx.TypedDict):
     id: str
     name: str  # flename
     title: str

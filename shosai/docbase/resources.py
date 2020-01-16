@@ -1,5 +1,5 @@
 import typing as t
-import mypy_extensions as mx
+import typing_extensions as tx
 import logging
 import os.path
 import base64
@@ -56,18 +56,18 @@ class Resource:
         return self.profile.username == userdata
 
 
-class SearchResponseMetaDict(mx.TypedDict):
+class SearchResponseMetaDict(tx.TypedDict):
     next_page: t.Optional[str]
     previous_page: t.Optional[str]
     total: int
 
 
-class SearchResponseDict(mx.TypedDict):
+class SearchResponseDict(tx.TypedDict):
     meta: SearchResponseMetaDict
     posts: t.Sequence[structure.PostDict]
 
 
-class SearchParamsDict(mx.TypedDict, total=False):
+class SearchParamsDict(tx.TypedDict, total=False):
     q: str  # default "*"
     page: int  # default 1
     per_page: int  # default 20, max 100
@@ -150,7 +150,7 @@ class Fetch:
         return self.__call__(id)
 
 
-class _PostParamsDictOptional(mx.TypedDict, total=False):
+class _PostParamsDictOptional(tx.TypedDict, total=False):
     draft: bool  # default false
     notice: bool  # default true
     tags: t.Sequence[str]
@@ -158,7 +158,7 @@ class _PostParamsDictOptional(mx.TypedDict, total=False):
     groups: t.Sequence[str]
 
 
-class PostParamsDict(_PostParamsDictOptional, mx.TypedDict, total=True):
+class PostParamsDict(_PostParamsDictOptional, tx.TypedDict, total=True):
     title: str
     body: str
 
