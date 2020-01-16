@@ -60,11 +60,11 @@ class Resource:
 
     # extra commands
     @reify
-    def tags(self) -> "Tags":
+    def tags(self) -> "_Tags":
         return _Tags(self)
 
     @reify
-    def groups(self) -> "Groups":
+    def groups(self) -> "_Groups":
         return _Groups(self)
 
 
