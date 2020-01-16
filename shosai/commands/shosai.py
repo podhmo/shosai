@@ -16,6 +16,7 @@ def auth(
     out: t.Optional[t.IO] = None,
     verbose: bool = False,
 ) -> None:
+    """show setup information (not auth)"""
     from shosai import App
 
     out = out or sys.stdout
