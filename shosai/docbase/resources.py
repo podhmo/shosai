@@ -16,6 +16,8 @@ class Session(LoggedRequestMixin, sessions.Session):
 
 
 class Resource:
+    API_VERSION = "https://help.docbase.io/posts/45703"
+
     def __init__(self, profile):
         self.profile = profile
 
@@ -27,6 +29,7 @@ class Resource:
     def session(self) -> Session:
         s = Session()
         s.headers["X-DocBaseToken"] = self.profile.token
+        s.headers["X-Api-Version"] = self.API_VERSION
         return s
 
     def __enter__(self):
