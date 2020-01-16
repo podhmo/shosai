@@ -58,6 +58,15 @@ class Resource:
     def is_author(self, userdata: t.Union[t.Dict, str]):
         return self.profile.username == userdata
 
+    # extra commands
+    @reify
+    def tags(self) -> "Tags":
+        return _Tags(self)
+
+    @reify
+    def groups(self) -> "Groups":
+        return _Groups(self)
+
 
 class SearchResponseMetaDict(tx.TypedDict):
     next_page: t.Optional[str]
@@ -218,4 +227,28 @@ class Post:
         url = f"{app.url}/posts"
 
         response = app.session.post(url, json=params)
+        return response.json()
+
+
+class _Tags:
+    def __init__(self, app: Resource) -> None:
+        self.app = app
+
+    # todo typing structure..
+    def __call__(self) -> t.Dict[str, t.Any]:
+        app = self.app
+        url = f"{app.url}/tags"
+        response = self.app.session.get(url)
+        return response.json()
+
+
+class _Groups:
+    def __init__(self, app: Resource) -> None:
+        self.app = app
+
+    # todo typing structure..
+    def __call__(self) -> t.Dict[str, t.Any]:
+        app = self.app
+        url = f"{app.url}/groups"
+        response = self.app.session.get(url)
         return response.json()
