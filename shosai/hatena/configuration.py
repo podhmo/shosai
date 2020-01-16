@@ -7,20 +7,22 @@ from . import structure
 
 logger = logging.getLogger(__name__)
 
+CONFIG_SKELETON: structure.ProfileDict = {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "client_id": "",
+    "client_secret": "",
+    "hatena_id": "",
+    "blog_id": "",
+}
+AUTH_DOC_URL = "http://developer.hatena.ne.jp/ja/documents/auth/apis/oauth"
+
 
 def init(path: str) -> None:
-    d: structure.ProfileDict = {
-        "consumer_key": "",
-        "consumer_secret": "",
-        "client_id": "",
-        "client_secret": "",
-        "hatena_id": "",
-        "blog_id": "",
-    }
     os.makedirs(os.path.dirname(path), exist_ok=True)
     logger.info("write: %s", path)
     with open(path, "w") as wf:
-        json.dump({"hatena": d}, wf, indent=2)
+        json.dump({"hatena": CONFIG_SKELETON}, wf, indent=2)
 
 
 def load(config_path: str, *, init=init):
