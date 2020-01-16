@@ -226,7 +226,9 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
         dest="log",
     )
     parser.add_argument("-v", "--verbose", action="store_true")
-    subparsers = parser.add_subparsers(required=True, dest="subcommand")
+    subparsers = parser.add_subparsers(
+        required=True, dest="subcommand", title="subcommands"
+    )
 
     # auth
     fn = auth
