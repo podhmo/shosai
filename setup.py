@@ -16,7 +16,7 @@ install_requires = [
     "requests_oauthlib",  # for hatena
     "xmltodict",  # for hatena
     "mistune",
-    "mypy_extensions",
+    "typing_extensions",
 ]
 
 docs_extras = []

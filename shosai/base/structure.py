@@ -1,14 +1,14 @@
 import typing as t
-import mypy_extensions as mx
+import typing_extensions as tx
 
 
-class PostDict(mx.TypedDict):
+class PostDict(tx.TypedDict):
     content: str
     tags: t.Sequence[str]
     title: str
 
 
-class MappingDict(mx.TypedDict):
+class MappingDict(tx.TypedDict):
     id: t.Any
     name: str
     title: str
@@ -19,12 +19,12 @@ class MappingDict(mx.TypedDict):
     tags: t.Sequence[str]
 
 
-class AttachmentDict(mx.TypedDict):
+class AttachmentDict(tx.TypedDict):
     name: str
     content: str
 
 
-class AttachmentResultDict(mx.TypedDict):
+class AttachmentResultDict(tx.TypedDict):
     id: t.Any
     name: str
     url: str
