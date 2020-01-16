@@ -7,18 +7,19 @@ from . import structure
 
 logger = logging.getLogger(__name__)
 
+API_TOKEN_SKELETON: str = "<from https://help.docbase.io/posts/45703#%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3>"
+CONFIG_SKELETON: structure.ProfileDict = {
+    "teamname": "<team>",
+    "token": API_TOKEN_SKELETON,
+    "username": "<user>",
+}
+
 
 def init(path: str) -> None:
-    api_token: str = "<from https://help.docbase.io/posts/45703#%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3>"
-    d: structure.ProfileDict = {
-        "teamname": "<team>",
-        "token": api_token,
-        "username": "<user>",
-    }
     os.makedirs(os.path.dirname(path), exist_ok=True)
     logger.info("write: %s", path)
     with open(path, "w") as wf:
-        json.dump({"docbase": d}, wf, indent=2)
+        json.dump({"docbase": CONFIG_SKELETON}, wf, indent=2)
 
 
 def load(config_path: str, *, init=init):
