@@ -4,6 +4,7 @@ import json
 import logging
 from .langhelpers import reify
 from .base import structure as basestructure
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +46,9 @@ class Loader:
     @reify
     def abspath_map(self):
         dirpath = os.path.abspath(os.path.dirname(self.path))
-        return {os.path.normpath(os.path.join(dirpath, d["file"])): d for d in self.data}
+        return {
+            os.path.normpath(os.path.join(dirpath, d["file"])): d for d in self.data
+        }
 
     def lookup(self, path) -> t.Optional[t.Dict]:
         abspath = os.path.normpath(os.path.abspath(path))
@@ -69,7 +72,7 @@ class Saver:
         savefile=False,
         filepath=None,
         name=None,
-        _retry=False
+        _retry=False,
     ):
         title = post["title"]
         if filepath is None:
@@ -93,7 +96,12 @@ class Saver:
                     raise
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 return self.append(
-                    post, mapping, savefile=savefile, filepath=filepath, name=name, _retry=True
+                    post,
+                    mapping,
+                    savefile=savefile,
+                    filepath=filepath,
+                    name=name,
+                    _retry=True,
                 )
 
         relpath = os.path.relpath(filepath, start=os.path.dirname(self.path))

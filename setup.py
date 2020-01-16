@@ -1,6 +1,7 @@
 import os
 
 from setuptools import setup, find_packages
+
 here = os.path.abspath(os.path.dirname(__file__))
 try:
     with open(os.path.join(here, "README.rst")) as f:
@@ -41,15 +42,12 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
-    extras_require={
-        "testing": testing_extras,
-        "docs": docs_extras,
-    },
+    extras_require={"testing": testing_extras, "docs": docs_extras,},
     tests_require=tests_require,
     test_suite="shosai.tests",
     entry_points="""
       [console_scripts]
       shosai = shosai.commands.shosai:main
       shosai-internal = shosai.commands.shosai_internal:main
-"""
+""",
 )

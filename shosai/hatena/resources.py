@@ -8,6 +8,7 @@ from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
 from . import xmllib
+
 logger = logging.getLogger(__name__)
 
 # see:
@@ -25,7 +26,9 @@ class Resource:
 
     @reify
     def url(self):
-        url = f"https://blog.hatena.ne.jp/{self.profile.hatena_id}/{self.profile.blog_id}"
+        url = (
+            f"https://blog.hatena.ne.jp/{self.profile.hatena_id}/{self.profile.blog_id}"
+        )
         return url.rstrip("/")
 
     @reify
@@ -35,7 +38,7 @@ class Resource:
             client_key=profile.consumer_key,
             client_secret=profile.consumer_secret,
             resource_owner_key=profile.client_id,
-            resource_owner_secret=profile.client_secret
+            resource_owner_secret=profile.client_secret,
         )
         return s
 
@@ -89,31 +92,27 @@ class Attachment:
         self.app = app
 
     def build_content_from_file(
-        self,
-        path: str,
-        *,
-        name=None,
+        self, path: str, *, name=None,
     ) -> structure.AttachmentDict:
         with open(path, "rb") as rf:
             data = rf.read()
         return self.build_content(path, data, name=name)
 
     def build_content(
-        self,
-        path: str,
-        data: bytes,
-        *,
-        name: t.Optional[str] = None,
+        self, path: str, data: bytes, *, name: t.Optional[str] = None,
     ) -> structure.AttachmentDict:
         import base64
+
         return {
             "name": name or os.path.basename(path),
             "content": base64.b64encode(data).decode("ascii"),
         }
 
-    def __call__(self, contents: t.Sequence[structure.AttachmentDict]
-                 ) -> t.Sequence[structure.AttachmentResultDict]:
+    def __call__(
+        self, contents: t.Sequence[structure.AttachmentDict]
+    ) -> t.Sequence[structure.AttachmentResultDict]:
         import mimetypes
+
         app = self.app
         url = "http://f.hatena.ne.jp/atom/post/"
 
@@ -128,7 +127,7 @@ class Attachment:
                     "content": {
                         "@mode": "base64",
                         "@type": typ,
-                        "#text": content["content"]
+                        "#text": content["content"],
                     },
                 },
             }
@@ -227,13 +226,8 @@ class Post:
                 "@xmlns": "http://www.w3.org/2005/Atom",
                 "@xmlns:app": "http://www.w3.org/2007/app",
                 "title": title,
-                "author": {
-                    "name": self.author_name,
-                },
-                "content": {
-                    "@type": "text/plain",
-                    "#text": body,
-                },
+                "author": {"name": self.author_name,},
+                "content": {"@type": "text/plain", "#text": body,},
                 "app:control": {
                     "app:draft": ("yes" if (draft is None or draft) else "no"),
                 },

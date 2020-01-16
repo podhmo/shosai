@@ -5,6 +5,7 @@ import textwrap
 class ParseTitleTests(unittest.TestCase):
     def _callFUT(self, text):
         from shosai.parsing import parse_title
+
         return parse_title(text)
 
     def test_it(self):
@@ -39,6 +40,7 @@ class ParseTitleTests(unittest.TestCase):
 class ParseArticleTests(unittest.TestCase):
     def _getTarget(self):
         from shosai.parsing import parse_article
+
         return parse_article
 
     def _callFUT(self, text):
@@ -64,19 +66,24 @@ class ParseArticleTests(unittest.TestCase):
         self.assertEqual(parsed.content, "\n".join(text.splitlines()[1:]).strip())
 
     def test_it2(self):
-        text = textwrap.dedent("""
+        text = textwrap.dedent(
+            """
 
         Timeseries Classification: KNN & DTW
         ===
         Mark Regan
-        """).rstrip()
+        """
+        ).rstrip()
         parsed = self._callFUT(text)
         self.assertEqual(parsed.title, "Timeseries Classification: KNN & DTW")
         self.assertEqual(parsed.tags, [])
-        self.assertEqual(parsed.content, "\n".join(text.strip().splitlines()[2:]).strip())
+        self.assertEqual(
+            parsed.content, "\n".join(text.strip().splitlines()[2:]).strip()
+        )
 
     def test_it3(self):
-        text = textwrap.dedent("""
+        text = textwrap.dedent(
+            """
 ```code
 1
 2
@@ -93,7 +100,8 @@ class ParseArticleTests(unittest.TestCase):
 # sub section
 
 body
-        """).rstrip()
+        """
+        ).rstrip()
         parsed = self._callFUT(text)
         self.assertEqual(parsed.title, "sub section")
         self.assertEqual(parsed.tags, [])
@@ -101,6 +109,7 @@ body
 
     def test_it__with_image(self):
         from shosai.parsing import Image
+
         text = textwrap.dedent(
             """
             # section
@@ -115,17 +124,8 @@ body
         self.assertEqual(parsed.tags, [])
         self.assertEqual(parsed.content, "\n".join(text.splitlines()[1:]).strip())
         images = [
-            Image(**{
-                'src': 'https://example.net/images/foo.png',
-                'text': 'foo'
-            }),
-            Image(**{
-                'src': 'https://example.net/images/bar.png',
-                'text': 'bar'
-            }),
-            Image(**{
-                'src': 'boo.png',
-                'text': 'boo'
-            }),
+            Image(**{"src": "https://example.net/images/foo.png", "text": "foo"}),
+            Image(**{"src": "https://example.net/images/bar.png", "text": "bar"}),
+            Image(**{"src": "boo.png", "text": "boo"}),
         ]
         self.assertEqual(parsed.images, images)
