@@ -9,6 +9,33 @@ from shosai.langhelpers import NameStore
 logger = logging.getLogger(__name__)
 
 
+def auth(
+    service: str,
+    *,
+    config_path: str,
+    out: t.Optional[t.IO] = None,
+    verbose: bool = False,
+) -> None:
+    from shosai import App
+
+    out = out or sys.stdout
+    app = App(config_path, service=service)
+    c = app.configuration
+    print(
+        "please, setting value something like following (in {})".format(
+            app.config_path
+        ),
+        file=sys.stderr,
+    )
+    json.dump(c.CONFIG_SKELETON, out, indent=2, ensure_ascii=False)
+    print("", file=out)
+
+    import webbrowser
+
+    print("open {}".format(c.AUTH_DOC_URL))
+    webbrowser.open_new_tab(c.AUTH_DOC_URL)
+
+
 def search(
     service: str,
     *,
@@ -199,6 +226,12 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     )
     parser.add_argument("-v", "--verbose", action="store_true")
     subparsers = parser.add_subparsers(required=True, dest="subcommand")
+
+    # auth
+    fn = auth
+    sparser = subparsers.add_parser(fn.__name__, description=fn.__doc__)
+    sparser.set_defaults(subcommand=fn)
+    sparser.add_argument("-c", "--config", required=False, dest="config_path")
 
     # search
     fn = search
