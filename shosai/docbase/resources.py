@@ -143,7 +143,7 @@ class Fetch:
         rx = re.compile(r"https://([^.]+).docbase.io/posts/(\d+)")
 
         m = rx.search(url)
-        assert m is not None
+        assert m is not None, "not matched in {!r}".format(rx.pattern)
         team = m.group(1)
         assert team == app.profile.teamname
         id = m.group(2)
