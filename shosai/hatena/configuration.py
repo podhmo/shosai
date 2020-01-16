@@ -15,6 +15,7 @@ CONFIG_SKELETON: structure.ProfileDict = {
     "hatena_id": "",
     "blog_id": "",
 }
+AUTH_DOC_URL = "http://developer.hatena.ne.jp/ja/documents/auth/apis/oauth"
 
 
 def init(path: str) -> None:
