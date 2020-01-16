@@ -24,5 +24,7 @@ def from_search_response(data: SearchResponseDict) -> t.Sequence[base.PostDict]:
     return [(post_from_post(post), mapping_from_post(post)) for post in data["posts"]]
 
 
-def from_fetch_response(data: structure.PostDict) -> t.Tuple[base.PostDict, base.MappingDict]:
+def from_fetch_response(
+    data: structure.PostDict,
+) -> t.Tuple[base.PostDict, base.MappingDict]:
     return (post_from_post(data), mapping_from_post(data))

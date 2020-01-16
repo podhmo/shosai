@@ -35,11 +35,7 @@ class _CaputringRenderer:
         return self.renderer.image(src, title, text)
 
 
-_scanner = re.Scanner([
-    (r"\[", "["),
-    (r"\]", "]"),
-    (r"[^\]\[]+", lambda s, m: m),
-])
+_scanner = re.Scanner([(r"\[", "["), (r"\]", "]"), (r"[^\]\[]+", lambda s, m: m),])
 
 
 def parse_title(title: str, *, scanner: re.Scanner = _scanner) -> Title:

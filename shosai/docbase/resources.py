@@ -7,6 +7,7 @@ from requests import sessions
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
+
 logger = logging.getLogger(__name__)
 
 
@@ -102,21 +103,14 @@ class Attachment:
         self.app = app
 
     def build_content_from_file(
-        self,
-        path: str,
-        *,
-        name=None,
+        self, path: str, *, name=None,
     ) -> structure.AttachmentDict:
         with open(path, "rb") as rf:
             data = rf.read()
         return self.build_content(path, data, name=name)
 
     def build_content(
-        self,
-        path: str,
-        data: bytes,
-        *,
-        name: t.Optional[str] = None,
+        self, path: str, data: bytes, *, name: t.Optional[str] = None,
     ) -> structure.AttachmentDict:
         return {
             "name": name or os.path.basename(path),
@@ -144,6 +138,7 @@ class Fetch:
 
     def from_url(self, url: str) -> structure.PostDict:
         import re
+
         app = self.app
         rx = re.compile(r"https://([^.]+).docbase.io/posts/(\d+)")
 

@@ -4,6 +4,7 @@ import logging
 import os.path
 from ..langhelpers import reify
 from . import structure
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +23,10 @@ def init(path: str) -> None:
 
 def load(config_path: str, *, init=init):
     if not os.path.exists(config_path):
-        print(f"{config_path} is not found, generated. please setting this file.", file=sys.stderr)
+        print(
+            f"{config_path} is not found, generated. please setting this file.",
+            file=sys.stderr,
+        )
         init(config_path)
         sys.exit(1)
 

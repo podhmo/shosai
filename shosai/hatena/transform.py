@@ -10,7 +10,7 @@ def post_from_post(entry: structure.PostDict) -> base.PostDict:
     return {
         "title": entry["title"],
         "tags": [c["@term"] for c in categories],
-        "content": entry["content"]["#text"]
+        "content": entry["content"]["#text"],
     }
     return entry
 
@@ -38,8 +38,13 @@ def mapping_from_post(entry: structure.PostDict) -> base.PostDict:
 
 
 # todo: typing
-def from_search_response(data: t.Dict) -> t.Sequence[t.Tuple[base.PostDict, base.MappingDict]]:
-    return [(post_from_post(entry), mapping_from_post(entry)) for entry in data["feed"]["entry"]]
+def from_search_response(
+    data: t.Dict,
+) -> t.Sequence[t.Tuple[base.PostDict, base.MappingDict]]:
+    return [
+        (post_from_post(entry), mapping_from_post(entry))
+        for entry in data["feed"]["entry"]
+    ]
 
 
 def from_fetch_response(data: t.Dict) -> t.Tuple[base.PostDict, base.MappingDict]:
