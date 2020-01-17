@@ -16,6 +16,7 @@ def auth(
     out: t.Optional[t.IO] = None,
     verbose: bool = False,
 ) -> None:
+    """show setup information (not auth)"""
     from shosai import App
 
     out = out or sys.stdout
@@ -276,6 +277,18 @@ def submain(service: str, argv: t.Optional[t.Sequence[str]] = None) -> None:
     sparser.add_argument("--publish", action="store_false", dest="draft", default=None)
     sparser.add_argument("--notice", action="store_true")
     sparser.add_argument("--id")
+
+    try:
+        from importlib import import_module
+
+        extra_commands_module = f"shosai.{service}.extra_commands"
+        module = import_module(extra_commands_module)
+        module.setup(parser=parser, subparsers=subparsers)
+    except ImportError:
+        print(
+            f"extra commands module is not found ({extra_commands_module})",
+            file=sys.stderr,
+        )
 
     args = parser.parse_args(argv)
     params = vars(args).copy()

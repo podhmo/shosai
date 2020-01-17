@@ -59,7 +59,7 @@ def parse_title(title: str, *, scanner: re.Scanner = _scanner) -> Title:
             break
 
         buf.pop()
-        tags.append(tag.strip())
+        tags.append(html.unescape(tag.strip()))
     return Title(tags=tags, title="".join(itertools.chain(buf, itr)).strip())
 
 
