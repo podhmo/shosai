@@ -115,14 +115,14 @@ class Attachment:
         self.app = app
 
     def build_content_from_file(
-        self, path: str, *, name=None,
+        self, path: str, *, name=None
     ) -> structure.AttachmentDict:
         with open(path, "rb") as rf:
             data = rf.read()
         return self.build_content(path, data, name=name)
 
     def build_content(
-        self, path: str, data: bytes, *, name: t.Optional[str] = None,
+        self, path: str, data: bytes, *, name: t.Optional[str] = None
     ) -> structure.AttachmentDict:
         return {
             "name": name or os.path.basename(path),
@@ -212,9 +212,12 @@ class Post:
                 params.pop("draft", None)
 
         if id is None:
-            return self._create_post(params)
+            response = self._create_post(params)
+            logger.info("created: %s", response.get("url"))
         else:
-            return self._update_post(params, id=id)
+            response = self._update_post(params, id=id)
+            logger.info("updated: %s", response.get("url"))
+        return response
 
     def _update_post(self, params: t.Dict, *, id: str) -> structure.PostDict:
         app = self.app
