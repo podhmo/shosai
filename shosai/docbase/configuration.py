@@ -1,3 +1,4 @@
+import typing as t
 import sys
 import json
 import logging
@@ -57,3 +58,7 @@ class Profile:
     @reify
     def teamname(self) -> str:
         return self.data["teamname"]
+
+    @reify
+    def default_groupdid(self) -> t.Optional[str]:
+        return self.data.get("default_groupid")

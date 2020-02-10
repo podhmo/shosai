@@ -7,6 +7,7 @@ from requests import sessions
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
+from . import configuration
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class Session(LoggedRequestMixin, sessions.Session):
 class Resource:
     API_VERSION = "https://help.docbase.io/posts/45703"
 
-    def __init__(self, profile):
+    def __init__(self, profile: configuration.Profile):
         self.profile = profile
 
     @reify
@@ -210,6 +211,9 @@ class Post:
                 params["groups"] = [g["id"] for g in meta["groups"]]
             else:
                 params.pop("draft", None)
+        elif self.app.profile.default_groupdid is not None:
+            params["scope"] = "group"
+            params["groups"] = [self.app.profile.default_groupdid]
 
         if id is None:
             response = self._create_post(params)
