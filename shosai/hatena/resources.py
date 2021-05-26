@@ -3,7 +3,7 @@ import typing as t
 import logging
 import os.path
 import re
-from requests_oauthlib import OAuth1Session
+import requests
 from ..langhelpers import reify
 from ..base.resources import LoggedRequestMixin
 from . import structure
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom
 
 
-class Session(LoggedRequestMixin, OAuth1Session):
+class Session(LoggedRequestMixin, requests.Session):
     logger = logger
 
 
@@ -34,11 +34,39 @@ class Resource:
     @reify
     def session(self) -> Session:
         profile = self.profile
-        s = Session(
-            client_key=profile.consumer_key,
-            client_secret=profile.consumer_secret,
-            resource_owner_key=profile.client_id,
-            resource_owner_secret=profile.client_secret,
+        # s = Session(
+        #     client_key=profile.consumer_key,
+        #     client_secret=profile.consumer_secret,
+        #     resource_owner_key=profile.client_id,
+        #     resource_owner_secret=profile.client_secret,
+        # )
+        username = ".."
+        apikey = "..."  # api_key
+        from datetime import datetime
+        import base64
+        import hashlib
+        import secrets
+
+        def create_wsse(username, password):
+            created = datetime.utcnow().isoformat("T", timespec="seconds") + "Z"
+            b_nonce = hashlib.sha1(secrets.token_urlsafe().encode()).digest()
+            b_digest = hashlib.sha1(
+                b_nonce + created.encode() + password.encode()
+            ).digest()
+            s = 'UsernameToken Username="{0}", PasswordDigest="{1}", Nonce="{2}", Created="{3}"'
+            return s.format(
+                username,
+                base64.b64encode(b_digest).decode(),
+                base64.b64encode(b_nonce).decode(),
+                created,
+            )
+
+        s = Session()
+        s.headers.update(
+            {
+                "X-WSSE": create_wsse(username, apikey),
+                "Accept": "application/x.atom+xml, application/xml, text/xml, */*",
+            }
         )
         return s
 
@@ -114,7 +142,7 @@ class Attachment:
         import mimetypes
 
         app = self.app
-        url = "http://f.hatena.ne.jp/atom/post/"
+        url = "https://f.hatena.ne.jp/atom/post/"
 
         results = []
         for content in contents:
@@ -131,7 +159,7 @@ class Attachment:
                     },
                 },
             }
-            xml = xmllib.dumps(doc)
+            xml = xmllib.dumps(doc).encode()
             response = app.session.post(url, data=xml)
             try:
                 # ./structure.py attachment response doc
